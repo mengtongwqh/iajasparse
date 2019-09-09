@@ -1,12 +1,11 @@
 
-#include <iaja/global_defs.h>
 #include <iaja/ilu.h>
 
 #include <algorithm>
 #include <cassert>
 #include <iomanip>
-#include <string>
 
+IAJA_NAMESPACE_OPEN
 
 // headers for reordering schemes
 extern "C" {
@@ -307,3 +306,4 @@ void SparseILU::print_level_of_fill(std::ostream& os) const {
     }
 }
 
+IAJA_NAMESPACE_CLOSE

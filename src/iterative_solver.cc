@@ -1,6 +1,9 @@
+#include <iaja/global_defs.h>
 #include <iaja/iterative_solver.h>
 #include <cmath>
 #include <fstream>
+
+IAJA_NAMESPACE_OPEN
 
 /* ============================================ *
  *            IterativeSolverILU                *
@@ -191,3 +194,5 @@ int Orthomin::iterative_solve(const FullVector<double>& b, FullVector<double>& x
         exit(EXIT_FAILURE);
     }
 }
+
+IAJA_NAMESPACE_CLOSE

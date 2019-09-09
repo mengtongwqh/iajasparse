@@ -7,6 +7,8 @@
 #include <iostream>
 #include <utility>
 
+IAJA_NAMESPACE_OPEN
+
 /* ============================================ *
  *                  VECTOR                      *
  * ============================================ */
@@ -228,3 +230,4 @@ const T& SparseVector<T>:: operator[](unsigned int i) const {
     return a[i];
 }
 
+IAJA_NAMESPACE_CLOSE

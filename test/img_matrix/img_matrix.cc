@@ -1,6 +1,8 @@
 #include "img_matrix.h"
 #include <fstream>
 
+IAJA_NAMESPACE_OPEN
+
 ImgMatrixTest::ImgMatrixTest(unsigned int N_dim, unsigned int max_iter, double tol)
     : n(N_dim), N(n*n), lhs(N, N, 5*N), rhs(N), x(N) {
     alpha =
@@ -171,4 +173,4 @@ void ImgMatrixPCG::test_ilu_procedures(unsigned int max_level_of_fill, const std
     solver.test_ilu_factorization(reorder_method, max_level_of_fill, rhs);
 }
 
-
+IAJA_NAMESPACE_CLOSE

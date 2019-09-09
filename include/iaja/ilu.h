@@ -1,12 +1,14 @@
 #ifndef _ILU_H_
 #define _ILU_H_
 
+#include <iaja/global_defs.h>
 #include <iaja/linalg_matrix.h>
 #include <iaja/linalg_vector.h>
 
 #include <string>
 #include <vector>
 
+IAJA_NAMESPACE_OPEN
 
 class SparseILURow : public SparseVector<double>{
 
@@ -60,5 +62,7 @@ class SparseILU {
           std::vector<unsigned int>& row_level_of_fill,
           unsigned int& nnzrow);
 };
+
+IAJA_NAMESPACE_CLOSE
 
 #endif //_ILU_H_

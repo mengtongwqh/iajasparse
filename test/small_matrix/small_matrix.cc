@@ -6,6 +6,9 @@
 #include <iostream>
 using std::cout;
 using std::endl;
+using iaja::SparseMatrix;
+using iaja::FullVector;
+using iaja::SparseILU;
 
 /* const int N does not work for 
  * (int[N]){elmt1, elmt2, ..., elmtN}*/

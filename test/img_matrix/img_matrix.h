@@ -1,12 +1,15 @@
 #ifndef _IMG_MATRIX_H_
 #define _IMG_MATRIX_H_
 
+#include <iaja/global_defs.h>
 #include <iaja/linalg_vector.h>
 #include <iaja/linalg_matrix.h>
 #include <iaja/ilu.h>
 #include <iaja/iterative_solver.h>
 
 #include <string>
+
+IAJA_NAMESPACE_OPEN
 
 // -------------------------------------
 // Image matrix test base class
@@ -61,5 +64,7 @@ class ImgMatrixOrthomin : public ImgMatrixTest {
 
   Orthomin solver;
 };
+
+IAJA_NAMESPACE_CLOSE
 
 #endif

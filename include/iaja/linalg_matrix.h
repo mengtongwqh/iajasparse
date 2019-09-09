@@ -1,9 +1,11 @@
 #ifndef _LINALG_MATRIX_H_
 #define _LINALG_MATRIX_H_
 
-#include <iostream>
+#include <iaja/global_defs.h>
 #include <iaja/linalg_vector.h>
+#include <iostream>
 
+IAJA_NAMESPACE_OPEN
 
 /* sparse matrix in ia-ja (row compressed) data structure */
 template <typename T>
@@ -40,6 +42,8 @@ class SparseMatrix {
   unsigned int nc;
   unsigned int nnz; // count of nonzeros
 };
+
+IAJA_NAMESPACE_CLOSE
 
 #include <iaja/linalg_matrix.impl.h>
 

@@ -1,4 +1,5 @@
 #include <iaja/linalg_vector.h>
+using namespace iaja;
 
 int main() {
 

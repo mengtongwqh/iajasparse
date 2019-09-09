@@ -4,6 +4,7 @@
 #include <string>
 
 using std::cout; using std::endl; using std::ofstream;
+using iaja::ImgMatrixOrthomin;
 
 int main(int argc, char **args) {
 

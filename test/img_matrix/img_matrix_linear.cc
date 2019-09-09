@@ -3,7 +3,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-using std::cout; using std::endl;
+
+using iaja::ImgMatrixPCG;
 
 int main(int argc, char **args) {
 

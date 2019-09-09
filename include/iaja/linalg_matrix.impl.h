@@ -3,6 +3,8 @@
 #include <cassert>
 #include <iomanip>
 
+IAJA_NAMESPACE_OPEN
+
 /* -------------------------------------------
  * Constructors and destructors 
  * ------------------------------------------- */
@@ -83,3 +85,4 @@ FullVector<T> SparseMatrix<T>:: operator* (const FullVector<T> x) const {
     return y;
 }
 
+IAJA_NAMESPACE_CLOSE

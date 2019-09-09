@@ -1,8 +1,11 @@
 #ifndef _LINALG_VECTOR_H_
 #define _LINALG_VECTOR_H_
 
+#include <iaja/global_defs.h>
 #include <iostream>
 #include <vector>
+
+IAJA_NAMESPACE_OPEN
 
 template <typename T> class SparseMatrix;
 
@@ -74,6 +77,8 @@ class SparseVector {
   FullVector<T> a;
 };
 
+IAJA_NAMESPACE_CLOSE
 #include <iaja/linalg_vector.impl.h>
+
 
 #endif //_LINALG_VECTOR_H_

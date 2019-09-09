@@ -1,8 +1,11 @@
+#include <iaja/global_defs.h>
 #include <iaja/linalg_matrix.h>
 #include <iaja/linalg_vector.h>
 #include <iaja/ilu.h>
 
 #include <string>
+
+IAJA_NAMESPACE_OPEN
 
 class IterativeSolverILU {
 
@@ -78,3 +81,5 @@ class Orthomin : public IterativeSolverILU {
  private:
   const unsigned int k_orth;
 };
+
+IAJA_NAMESPACE_CLOSE
