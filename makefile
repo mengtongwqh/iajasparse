@@ -13,7 +13,7 @@ export CXXFLAGS
 export CFLAGS
 
 # SUBDIRS TO BE BUILT
-LIBDIR = ./build
+LIBDIR = ./lib
 TESTDIR = ./test
 TESTDIRS = $(wildcard $(TESTDIR)/*)
 DIRS = $(LIBDIR) + $(TESTDIRS)

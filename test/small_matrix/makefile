@@ -1,11 +1,11 @@
 # NAME OF OUTPUT PROGRAM
-PROGRAM = small_matrix
+PROGRAM = small_matrix_ilu
 
 # COMPILER FLAGS
 SRCEXTS = .cc .cpp
 
 # IAJA LIBRARY
-LIBIAJA = ../../build/libiajasparse.a
+LIBIAJA = ../../lib/libiajasparse.a
 CXXFLAGS += -I../../include
 
 SRC = $(wildcard *$(SRCEXTS))

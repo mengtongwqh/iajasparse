@@ -5,7 +5,7 @@ PROGRAM = vector_test
 SRCEXTS = .cc
 
 # IAJA LIBRARY
-LIBIAJA = ../../build/libiajasparse.a
+LIBIAJA = ../../lib/libiajasparse.a
 CXXFLAGS += -I../../include
 
 SRC = $(wildcard *$(SRCEXTS))

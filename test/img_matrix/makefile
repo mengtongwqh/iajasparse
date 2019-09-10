@@ -1,5 +1,5 @@
 # IAJA LIBRARY
-LIBIAJA = ../../build/libiajasparse.a
+LIBIAJA = ../../lib/libiajasparse.a
 NONLIN = img_matrix_nonlinear
 LIN = img_matrix_linear
 CXXFLAGS += -I../../include

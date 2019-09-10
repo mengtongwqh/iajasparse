@@ -11,6 +11,10 @@ int main() {
     FullVector<double> xc(xb);
     std::cout << xc*xb << std::endl;
     std::cout << xb.norm_l2() << std::endl;
+    std::cout << xc << std::endl;
+    xc.cumsum();
+    std::cout << xc << std::endl;
+    std::cout << "First test completed\n";
 //
     // FullVector<double> xb;
     // xb = xa;

@@ -1,5 +1,5 @@
 # NAME OF OUTPUT PROGRAM
-PROGRAM = orthomin_small
+PROGRAM = matrix_test
 
 # COMPILER FLAGS
 SRCEXTS = .cc .cpp
@@ -24,4 +24,4 @@ memcheck:
 	valgrind ./$(PROGRAM).x
 
 clean:
-	-$(RM) *.x *.o vgcore.*
+	-$(RM) *.x *.o
