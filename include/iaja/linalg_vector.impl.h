@@ -163,6 +163,12 @@ void FullVector<T>::multiply(const T& s) {
     for ( unsigned int i = 0; i < n; ++i ) a[i] = s*a[i];
 }
 
+template <typename T>
+void FullVector<T>::cumsum() {
+    for ( unsigned int i = 1; i < n; ++i )
+        a[i] += a[i-1];
+}
+
 
 /* ============================================ *
  *                SPARSEVECTOR                  *

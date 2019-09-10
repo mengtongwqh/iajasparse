@@ -32,6 +32,7 @@ class SparseMatrix {
   unsigned int nrow() const { return nr; }
   unsigned int ncol() const { return nc; }
   unsigned int nonzeros() const { return nnz; }
+  SparseMatrix<T> transpose() const;
 
   FullVector<unsigned int> ia; // row index
   FullVector<unsigned int> ja; // column index

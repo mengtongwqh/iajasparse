@@ -41,6 +41,7 @@ class FullVector {
   void minus(const FullVector<T>& b, const FullVector<T>& c);
   void multiply(const SparseMatrix<T>& A, const FullVector<T>& x);
   void multiply(const T& s);
+  void cumsum();
 
  protected:
   unsigned int n;

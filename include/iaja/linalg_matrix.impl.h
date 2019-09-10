@@ -46,7 +46,8 @@ std::ostream& operator<< (std::ostream& os, const SparseMatrix<T>& mtrx) {
 
         // column loop
         for (unsigned int j = 0; j < mtrx.nc ; ++j) {
-            if (mtrx.ja[ctr] == j) {
+
+            if ( ctr < mtrx.ja.length() && mtrx.ja[ctr] == j) {
                 os << std::setw(width) << std::scientific << std::right << mtrx.a[ctr] << " ";
                 ++ctr;
             } else {
@@ -83,6 +84,37 @@ FullVector<T> SparseMatrix<T>:: operator* (const FullVector<T> x) const {
         }
     }
     return y;
+}
+
+/* -------------------------------------------
+ * Methods
+ * ------------------------------------------- */
+template <typename T>
+SparseMatrix<T> SparseMatrix<T>::transpose() const {
+
+    // allocate transposed matrix
+    SparseMatrix<T> At(nc, nr, nnz);
+
+    // row indices
+    for (unsigned int i = 0; i < nnz; ++i)
+        ++( At.ia[ja[i]+1] );
+    At.ia.cumsum();
+
+    assert(At.ia[nc] == nnz);
+    assert(At.ia[0] == 0);
+
+    // column position for each row
+    FullVector<unsigned int> col_idx(At.ia);
+
+    for (unsigned int i = 0; i < nr; ++i) {
+        for (unsigned int jj = ia[i]; jj < ia[i+1]; ++jj) {
+            unsigned int p = col_idx[ja[jj]]++;
+            At.ja[p] = i;
+            At.a[p]  = a[jj];
+        }
+    }
+
+    return At;
 }
 
 IAJA_NAMESPACE_CLOSE
