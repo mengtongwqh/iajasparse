@@ -1,7 +1,7 @@
 #ifndef _LINALG_MATRIX_H_
 #define _LINALG_MATRIX_H_
 
-#include <iaja/global_defs.h>
+#include <iaja/iaja_config.h>
 #include <iaja/linalg_vector.h>
 #include <iostream>
 

@@ -1,7 +1,7 @@
 #ifndef _ILU_H_
 #define _ILU_H_
 
-#include <iaja/global_defs.h>
+#include <iaja/iaja_config.h>
 #include <iaja/linalg_matrix.h>
 #include <iaja/linalg_vector.h>
 

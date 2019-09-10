@@ -1,4 +1,4 @@
-#include <iaja/global_defs.h>
+#include <iaja/iaja_config.h>
 
 #include <cassert>
 #include <iomanip>
