@@ -17,15 +17,17 @@ IAJA_NAMESPACE_OPEN
 class ImgMatrixTest  {
 
  public:
-  ImgMatrixTest(unsigned int N, unsigned int max_iter, double tol);
+  
+  using size_type = std::size_t;
+  ImgMatrixTest(size_type N, unsigned int max_iter, double tol);
   virtual ~ImgMatrixTest() = default;
   void img_lhs();
   void img_rhs();
   void set_diag_dominant_Mmatrix();
 
   // parameters
-  unsigned int n;
-  unsigned int N;
+  size_type n;
+  size_type N;
 
   // matrix structure
   SparseMatrix<double> lhs;
@@ -44,7 +46,7 @@ class ImgMatrixTest  {
 class ImgMatrixPCG : public ImgMatrixTest {
 
  public:
-  ImgMatrixPCG(unsigned int N, unsigned int max_iter, double tol)
+  ImgMatrixPCG(size_type N, unsigned int max_iter, double tol)
       : ImgMatrixTest(N, max_iter, tol), solver(lhs, max_iter, tol) {}
   virtual ~ImgMatrixPCG() = default;
   void test_ilu_procedures(unsigned int max_level_of_fill, const std::string& reorder_method);
@@ -57,7 +59,7 @@ class ImgMatrixPCG : public ImgMatrixTest {
 // -------------------------------------
 class ImgMatrixOrthomin : public ImgMatrixTest {
  public:
-  ImgMatrixOrthomin(unsigned int N, unsigned int k_orth,
+  ImgMatrixOrthomin(size_type N, unsigned int k_orth,
           unsigned int max_iter, double tol):
       ImgMatrixTest(N, max_iter, tol), solver(lhs, k_orth, max_iter, tol) {}
   virtual ~ImgMatrixOrthomin() = default;

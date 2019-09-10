@@ -2,6 +2,7 @@
 #define _LINALG_VECTOR_H_
 
 #include <iaja/iaja_config.h>
+#include <cstddef>
 #include <iostream>
 #include <vector>
 
@@ -14,10 +15,20 @@ template<typename T>
 class FullVector {
 
  public:
+  // standard data types similar to std library containers
+  using value_type      = T;
+  using size_type       = std::size_t;
+  using pointer         = value_type *;
+  using const_pointer   = const value_type *;
+  using iterator        = value_type *;
+  using const_iterator  = const value_type *;
+  using reference       = value_type &;
+  using const_reference = const value_type &;
+
   // constructor and destructor
   FullVector();
-  explicit FullVector(unsigned int n);
-  FullVector(unsigned int n, const T* a);
+  explicit FullVector(size_type n);
+  FullVector(size_type n, const T* a);
   FullVector(const FullVector<T>& v);
   FullVector(FullVector<T>&& v);
   virtual ~FullVector();
@@ -26,15 +37,15 @@ class FullVector {
   template <typename U>
   friend std::ostream& operator<< (std::ostream& os, const FullVector<U>& x);
 
-  T& operator[] (unsigned int i);
-  const T& operator[] (unsigned int i) const;
+  T& operator[] (size_type i);
+  const T& operator[] (size_type i) const;
   T operator* (const FullVector<T>& x) const;
   FullVector<T>& operator= (const FullVector<T>& rhs);
   FullVector<T>& operator= (const std::vector<T>& rhs);
   operator T*() { return a; }
 
   // member functions
-  unsigned int length() const {return n;}
+  size_type length() const {return n;}
   T norm_l2() const;
   void saxpy(T alpha, const FullVector<T>& x, const FullVector<T>& y);
   void add(const FullVector<T>& b, const FullVector<T>& c);
@@ -44,7 +55,7 @@ class FullVector {
   void cumsum();
 
  protected:
-  unsigned int n;
+  size_type n;
   T* a;
 };
 
@@ -53,10 +64,20 @@ template <typename T>
 class SparseVector {
 
  public:
+  // standard data types similar to std library containers
+  using value_type      = T;
+  using size_type       = std::size_t;
+  using pointer         = value_type *;
+  using const_pointer   = const value_type *;
+  using iterator        = value_type *;
+  using const_iterator  = const value_type *;
+  using reference       = value_type &;
+  using const_reference = const value_type &;
+
   // constructors and destructors
   SparseVector();
-  SparseVector(unsigned int n , unsigned int nnz);
-  SparseVector(unsigned int n, unsigned int nnz, const unsigned int* ja, const T* a);
+  SparseVector(size_type n , size_type nnz);
+  SparseVector(size_type n, size_type nnz, const size_type* ja, const T* a);
   SparseVector(const SparseVector<T>& rhs);
   SparseVector(SparseVector<T>&& rhs);
   virtual ~SparseVector() = default;
@@ -64,22 +85,22 @@ class SparseVector {
   /* operator overloading */
   template <typename U>
   friend std::ostream& operator<< (std::ostream& os, const SparseVector<U>& vin);
-  T& operator[](unsigned int i);
-  const T& operator[] (unsigned int i) const;
+  T& operator[](size_type i);
+  const T& operator[] (size_type i) const;
 
   /* public interfaces */
-  unsigned int length() const { return n; }
-  unsigned int nonzeros() const { return nnz; }
+  size_type length() const { return n; }
+  size_type nonzeros() const { return nnz; }
 
  protected:
-  unsigned int n;
-  unsigned int nnz;
-  FullVector<unsigned int> ja;
+  size_type n;
+  size_type nnz;
+  FullVector<size_type> ja;
   FullVector<T> a;
 };
 
 IAJA_NAMESPACE_CLOSE
-#include <iaja/linalg_vector.impl.h>
 
+#include <iaja/linalg_vector.impl.h>
 
 #endif //_LINALG_VECTOR_H_

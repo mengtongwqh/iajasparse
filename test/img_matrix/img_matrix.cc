@@ -3,7 +3,7 @@
 
 IAJA_NAMESPACE_OPEN
 
-ImgMatrixTest::ImgMatrixTest(unsigned int N_dim, unsigned int max_iter, double tol)
+ImgMatrixTest::ImgMatrixTest(size_type N_dim, unsigned int max_iter, double tol)
     : n(N_dim), N(n*n), lhs(N, N, 5*N), rhs(N), x(N) {
     alpha =
         (n == 16) ? 4e-2 :
@@ -18,12 +18,12 @@ void ImgMatrixTest::img_lhs() {
     double h = 1.0 / (n+1);
     double beta = 1e-6;
     lhs.ia[0] = 0;
-    unsigned int k = 0;
+    size_type k = 0;
 
-    for ( unsigned int j = 0; j < n; ++j ) {
-        for ( unsigned int i = 0; i < n; ++i ) {
+    for ( size_type j = 0; j < n; ++j ) {
+        for ( size_type i = 0; i < n; ++i ) {
 
-            unsigned int I = j*n + i;
+            size_type I = j*n + i;
             double a1, a2, a3, a4, a5, a6;
 
             /* bottom */
@@ -49,7 +49,7 @@ void ImgMatrixTest::img_lhs() {
             }
 
             /* center */
-            lhs.ja[k] = I; lhs.a[k] = 0.0; unsigned int kd = k; k++;
+            lhs.ja[k] = I; lhs.a[k] = 0.0; size_type kd = k; k++;
 
             /* right */
             if ( i < n-1 ) {
@@ -73,7 +73,7 @@ void ImgMatrixTest::img_lhs() {
                 lhs.ja[k] = I+n; lhs.a[k] = -alpha*(a4+a5); k++;
             }
 
-            for (unsigned int l = lhs.ia[I]; l < k; l++) {
+            for (size_type l = lhs.ia[I]; l < k; l++) {
                 if (l != kd) {
                     lhs.a[kd] -= lhs.a[l];
                 }
@@ -89,10 +89,10 @@ void ImgMatrixTest::img_rhs() {
 
     double h = 1.0/(n+1);
 
-    for ( unsigned int j = 1; j <= n; j++ ) {
-        for ( unsigned int i =1 ; i <= n; i++ ) {
+    for ( size_type j = 1; j <= n; j++ ) {
+        for ( size_type i =1 ; i <= n; i++ ) {
 
-            unsigned int I = (j-1)*n+i-1;
+            size_type I = (j-1)*n+i-1;
 
             /* exact image value */
             double x = i*h; double y = j*h;
@@ -106,15 +106,15 @@ void ImgMatrixTest::img_rhs() {
 
     /* Add noise to b */
     double b_norm = 0.0;
-    unsigned int N = n*n;
-    for ( unsigned int i = 0; i < N; i++ ) b_norm += rhs[i]*rhs[i];
+    size_type N = n*n;
+    for ( size_type i = 0; i < N; i++ ) b_norm += rhs[i]*rhs[i];
     b_norm = sqrt(b_norm);
     srand(42);
-    for (unsigned int i = 0; i < N; i++)
+    for (size_type i = 0; i < N; i++)
         rhs[i] += 2*h*b_norm*(2.0*rand()/RAND_MAX-1);
 
     /* Copy b to u */
-    for (unsigned int i = 0; i < N; i++)
+    for (size_type i = 0; i < N; i++)
         x[i] = rhs[i];
 }
 
@@ -135,12 +135,12 @@ void ImgMatrixTest::set_diag_dominant_Mmatrix() {
 
     int isave;
 
-    for ( unsigned int i = 0; i < N; ++i ) {
+    for ( size_type i = 0; i < N; ++i ) {
 
         isave = -1;
         double temp = 0.0;
 
-        for (unsigned int ii = lhs.ia[i]; ii < lhs.ia[i+1]; ++ii) {
+        for (size_type ii = lhs.ia[i]; ii < lhs.ia[i+1]; ++ii) {
             if ( lhs.ja[ii] == i ) {
                 isave = ii;
             } else {
@@ -158,9 +158,9 @@ void ImgMatrixTest::set_diag_dominant_Mmatrix() {
         lhs.a[isave] = -temp + 0.1;
     }
 
-    for ( unsigned int i = 0; i < N; ++i ) {
+    for ( size_type i = 0; i < N; ++i ) {
         rhs[i] = 0.0;
-        for ( unsigned int ii = lhs.ia[i]; ii < lhs.ia[i+1]; ++ii ) {
+        for ( size_type ii = lhs.ia[i]; ii < lhs.ia[i+1]; ++ii ) {
             rhs[i] += lhs.a[ii] * (lhs.ja[ii] + 1);
         }
     }

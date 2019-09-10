@@ -24,4 +24,4 @@ memcheck:
 	valgrind ./$(PROGRAM).x
 
 clean:
-	-$(RM) *.x *.o
+	-$(RM) *.x *.o vgcore.*

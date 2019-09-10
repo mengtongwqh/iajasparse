@@ -1,4 +1,5 @@
 #include <iaja/iaja_config.h>
+#include <iaja/linalg_vector.h>
 
 #include <cassert>
 #include <cmath>
@@ -20,17 +21,17 @@ FullVector<T>::FullVector() {
 }
 
 template <typename T>
-FullVector<T>::FullVector(unsigned int n_in) {
+FullVector<T>::FullVector(size_type n_in) {
     // allocate and 0-init
     n = n_in;
     a = new T[n]();
 }
 
 template <typename T>
-FullVector<T>::FullVector(unsigned int n_in, const T* a_in) {
+FullVector<T>::FullVector(size_type n_in, const T* a_in) {
     n = n_in;
     a = new T[n_in];
-    for (unsigned int i = 0; i < n; ++i)
+    for (size_type i = 0; i < n; ++i)
         a[i] = a_in[i];
 }
 
@@ -39,7 +40,7 @@ FullVector<T>::FullVector(const FullVector<T>& v) {
     // copy constructor will allocate new space
     n = v.n;
     a = new T[n];
-    for (unsigned int i = 0; i < n; ++i)
+    for (size_type i = 0; i < n; ++i)
         a[i] = v[i];
 }
 
@@ -57,13 +58,13 @@ FullVector<T>::~FullVector() {
 
 /* ------ Operator Overloading ------ */
 template <typename T>
-T& FullVector<T>:: operator[](unsigned int i) {
+T& FullVector<T>:: operator[](size_type i) {
     assert(i >= 0 && i < n);
     return a[i];
 }
 
 template <typename T>
-const T& FullVector<T>:: operator[] (unsigned int i) const {
+const T& FullVector<T>:: operator[] (size_type i) const {
     assert(i >= 0 && i < n);
     return a[i];
 }
@@ -72,7 +73,7 @@ template <typename T>
 T FullVector<T>:: operator* (const FullVector<T>& x) const {
     assert(n == x.n);
     T s = 0.0;
-    for (unsigned int i = 0 ; i < x.n; ++i)
+    for (size_type i = 0 ; i < x.n; ++i)
         s += a[i] * x[i];
     return s;
 }
@@ -85,7 +86,7 @@ FullVector<T>& FullVector<T>:: operator= (const FullVector<T>& rhs) {
             a = new T[rhs.n];
         }
         n = rhs.n;
-        for (unsigned int i = 0; i < n; ++i) a[i] = rhs[i];
+        for (size_type i = 0; i < n; ++i) a[i] = rhs[i];
     }
     return *this;
 }
@@ -98,7 +99,7 @@ FullVector<T>& FullVector<T>:: operator= (const std::vector<T>& rhs) {
             a = new T[rhs.size()];
         }
         n = rhs.size();
-        unsigned int ctr = 0;
+        size_type ctr = 0;
         for (auto i = rhs.cbegin(); i != rhs.cend(); ++i) {
             a[ctr] = *i; ++ctr;
         }
@@ -109,7 +110,7 @@ FullVector<T>& FullVector<T>:: operator= (const std::vector<T>& rhs) {
 template <typename T>
 std::ostream& operator<< (std::ostream& os, const FullVector<T>& x) {
     const unsigned int width = PRINT_WIDTH_DOUBLE;
-    for (unsigned int i = 0; i < x.n; ++i)
+    for (decltype(x.n) i = 0; i < x.n; ++i)
             os << std::setw(width) << std::scientific <<std::right<< x.a[i];
     return os;
 }
@@ -124,7 +125,7 @@ T FullVector<T>::norm_l2() const {
 template <typename T>
 void FullVector<T>::saxpy(T alpha, const FullVector<T>& x, const FullVector<T>& y) {
     // a = alpha*x + y
-    for (unsigned int i = 0; i < n; i++)
+    for (size_type i = 0; i < n; i++)
         a[i] = alpha*x[i] + y[i];
 }
 
@@ -132,7 +133,7 @@ template <typename T>
 void FullVector<T>::add(const FullVector<T>& b, const FullVector<T>& c) {
     // a = b - c
     assert(b.length() == c.length());
-    for (unsigned int i = 0; i < n; i++)
+    for (size_type i = 0; i < n; i++)
         a[i] = b[i] + c[i];
 }
 
@@ -140,7 +141,7 @@ template <typename T>
 void FullVector<T>::minus(const FullVector<T>& b, const FullVector<T>& c) {
     // a = b - c
     assert(b.length() == c.length());
-    for (unsigned int i = 0; i < n; i++)
+    for (size_type i = 0; i < n; i++)
         a[i] = b[i] - c[i];
 }
 
@@ -150,9 +151,9 @@ void FullVector<T>::multiply(const SparseMatrix<T>& A, const FullVector<T>& x) {
     assert(A.ncol() == x.length());
     assert(A.nrow() == this->length());
 
-    for (unsigned int i = 0; i < A.nrow(); ++i) {
+    for (size_type i = 0; i < A.nrow(); ++i) {
         a[i] = 0.0;
-        for (unsigned int jj = A.ia[i]; jj < A.ia[i+1]; ++jj) {
+        for (size_type jj = A.ia[i]; jj < A.ia[i+1]; ++jj) {
             a[i] += A[jj] * x[ A.ja[jj] ];
         }
     }
@@ -160,12 +161,12 @@ void FullVector<T>::multiply(const SparseMatrix<T>& A, const FullVector<T>& x) {
 
 template <typename T>
 void FullVector<T>::multiply(const T& s) {
-    for ( unsigned int i = 0; i < n; ++i ) a[i] = s*a[i];
+    for ( size_type i = 0; i < n; ++i ) a[i] = s*a[i];
 }
 
 template <typename T>
 void FullVector<T>::cumsum() {
-    for ( unsigned int i = 1; i < n; ++i )
+    for ( size_type i = 1; i < n; ++i )
         a[i] += a[i-1];
 }
 
@@ -182,14 +183,14 @@ SparseVector<T>::SparseVector():
 }
 
 template <typename T>
-SparseVector<T>::SparseVector(unsigned int n_in, unsigned int nnz_in):
+SparseVector<T>::SparseVector(size_type n_in, size_type nnz_in):
     n(n_in), nnz(nnz_in), ja(nnz_in), a(nnz_in) {
     assert(nnz_in <= n_in);
 }
 
 template <typename T>
-SparseVector<T>::SparseVector(unsigned int n_in, unsigned int nnz_in,
-        const unsigned int* ja_in, const T* a_in):
+SparseVector<T>::SparseVector(size_type n_in, size_type nnz_in,
+        const size_type* ja_in, const T* a_in):
     n(n_in), nnz(nnz_in), ja(nnz_in, ja_in), a(nnz_in, a_in) {
     assert(nnz_in <= n_in);
 }
@@ -212,7 +213,7 @@ std::ostream& operator<<(std::ostream& os, const SparseVector<T>& vin) {
 
     const unsigned int width = PRINT_WIDTH_DOUBLE;
 
-    for (unsigned int i = 0, j = 0; i < vin.n; ++i) {
+    for (decltype(vin.n) i = 0, j = 0; i < vin.n; ++i) {
         if (j < vin.nnz && i == vin.ja[j]) {
             os << std::setw(width) << std::scientific <<std::right<< vin.a[j];
             ++j;
@@ -225,13 +226,13 @@ std::ostream& operator<<(std::ostream& os, const SparseVector<T>& vin) {
 }
 
 template <typename T>
-T& SparseVector<T>:: operator[](unsigned int i) {
+T& SparseVector<T>:: operator[](size_type i) {
     assert(i >= 0 && i < nnz);
     return a[i];
 }
 
 template <typename T>
-const T& SparseVector<T>:: operator[](unsigned int i) const {
+const T& SparseVector<T>:: operator[](size_type i) const {
     assert(i >= 0 && i < nnz);
     return a[i];
 }

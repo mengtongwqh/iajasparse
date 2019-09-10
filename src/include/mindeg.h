@@ -18,9 +18,9 @@
 */
 int mindeg            /* return (1) if OK, (0) otherwise */
 (
-    unsigned int* ia_in,          /* row pointers of A */
-    unsigned int* ja_in,         /* col indices of A */
-    unsigned int n_in,            /* number of rows and columns of A */
-    unsigned int nnz_in,
-    unsigned int* order_out        /* output permutation, size n */
+    size_t* ia_in,          /* row pointers of A */
+    size_t* ja_in,         /* col indices of A */
+    size_t n_in,            /* number of rows and columns of A */
+    size_t nnz_in,
+    size_t* order_out        /* output permutation, size n */
 );

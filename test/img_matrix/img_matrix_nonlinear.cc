@@ -12,7 +12,7 @@ int main(int argc, char **args) {
         std::cerr << "Need 1 argument for grid numbers per each dim." << std::endl;
 
     // parameters for solver
-    unsigned int ngrid = atoi(args[1]);
+    std::size_t ngrid = atoi(args[1]);
     unsigned int max_iter = 10000;
     double tol = 1e-2;
     unsigned int max_level_of_fill = 1;

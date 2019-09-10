@@ -9,10 +9,10 @@ using iaja::ImgMatrixPCG;
 int main(int argc, char **args) {
 
     // parameters for solver
-    if ( argc != 1 )
+    if ( argc != 2 )
         std::cerr << "Need 1 argument for grid numbers per each dim." << std::endl;
-    
-    unsigned int ngrid = atoi(args[1]);
+
+    std::size_t ngrid = atoi(args[1]);
     unsigned int max_iter = 10000;
     double tol = 1e-20;
     unsigned int max_level_of_fill = 0;
