@@ -15,11 +15,9 @@ IAJA_NAMESPACE_OPEN
 // Image matrix test base class
 // -------------------------------------
 class ImgMatrixTest  {
-
  public:
-  
   using size_type = std::size_t;
-  ImgMatrixTest(size_type N, unsigned int max_iter, double tol);
+  ImgMatrixTest(size_type N);
   virtual ~ImgMatrixTest() = default;
   void img_lhs();
   void img_rhs();
@@ -47,7 +45,7 @@ class ImgMatrixPCG : public ImgMatrixTest {
 
  public:
   ImgMatrixPCG(size_type N, unsigned int max_iter, double tol)
-      : ImgMatrixTest(N, max_iter, tol), solver(lhs, max_iter, tol) {}
+      : ImgMatrixTest(N), solver(lhs, max_iter, tol) {}
   virtual ~ImgMatrixPCG() = default;
   void test_ilu_procedures(unsigned int max_level_of_fill, const std::string& reorder_method);
 
@@ -61,7 +59,7 @@ class ImgMatrixOrthomin : public ImgMatrixTest {
  public:
   ImgMatrixOrthomin(size_type N, unsigned int k_orth,
           unsigned int max_iter, double tol):
-      ImgMatrixTest(N, max_iter, tol), solver(lhs, k_orth, max_iter, tol) {}
+      ImgMatrixTest(N), solver(lhs, k_orth, max_iter, tol) {}
   virtual ~ImgMatrixOrthomin() = default;
 
   Orthomin solver;

@@ -16,7 +16,7 @@ using iaja::Orthomin;
 
 int main(void) {
 
-    const unsigned int maxlevel = 0;
+    const unsigned int maxlevel = 1;
 
     /* allocate space */
     /* double *x = (double*)malloc( N*sizeof(double) );  [> soln <] */
@@ -54,7 +54,7 @@ int main(void) {
     unsigned int NORTH = 2;
     Orthomin solver(A, NORTH, 10000, 1e-10);
     FullVector<double> x(N);
-    solver.symbolic_factor();
+    solver.symbolic_factor("natural", maxlevel);
     solver.iterative_solve(b, x);
     cout << "The solution is " << endl;
     cout << x << endl;

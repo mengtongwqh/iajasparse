@@ -3,7 +3,7 @@
 
 IAJA_NAMESPACE_OPEN
 
-ImgMatrixTest::ImgMatrixTest(size_type N_dim, unsigned int max_iter, double tol)
+ImgMatrixTest::ImgMatrixTest(size_type N_dim)
     : n(N_dim), N(n*n), lhs(N, N, 5*N), rhs(N), x(N) {
     alpha =
         (n == 16) ? 4e-2 :

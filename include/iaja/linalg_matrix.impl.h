@@ -20,7 +20,7 @@ SparseMatrix<T>::SparseMatrix(size_type nr, size_type nc, size_type nnz)
 
 template <typename T>
 SparseMatrix<T>::SparseMatrix(const SparseMatrix<T>& mat)
-    : nr(mat.nr), nc(mat.nc), nnz(mat.nnz), ia(mat.ia), ja(mat.ja), a(mat.a) {}
+    : ia(mat.ia), ja(mat.ja), a(mat.a), nr(mat.nr), nc(mat.nc), nnz(mat.nnz) {}
 
 
 /* -------------------------------------------
