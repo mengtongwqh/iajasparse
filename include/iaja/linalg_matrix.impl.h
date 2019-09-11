@@ -48,9 +48,9 @@ std::ostream& operator<< (std::ostream& os, const SparseMatrix<T>& mtrx) {
         // column loop
         for (size_type j = 0; j < mtrx.nc ; ++j) {
 
-            if ( ctr < mtrx.ja.length() && mtrx.ja[ctr] == j ) {
-                os << std::setw(width) << std::scientific << std::right << mtrx.a[ctr] << " ";
-                ++ctr;
+            if ( ctr < mtrx.ia[i+1] && mtrx.ja[ctr] == j ) {
+                os << std::setw(width) << std::scientific << std::right 
+                    << mtrx.a[ctr++] << " ";
             } else {
                 os << std::setw(width) << std::scientific << std::right << 0 << " ";
             }
