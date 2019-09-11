@@ -39,6 +39,11 @@ class FullVector {
 
   T& operator[] (size_type i);
   const T& operator[] (size_type i) const;
+  T& operator[] (long int i);
+  const T& operator[] (long int i) const;
+  T& operator[] (int i); // resolve ambiguous overload
+  const T& operator[] (int i) const;
+
   T operator* (const FullVector<T>& x) const;
   FullVector<T>& operator= (const FullVector<T>& rhs);
   FullVector<T>& operator= (const std::vector<T>& rhs);

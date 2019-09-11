@@ -241,15 +241,15 @@ void SparseILU::factor() {
 
             // subtract the mult*(j-th row) from temp vector entries
             // to the right of this entry
-            for ( size_t jj = rows[idx_col].diag+1; jj < rows[idx_col].nnz; ++jj ) {
-                int idx_row = rows[idx_col].ja[jj];
+            for ( size_type jj = rows[idx_col].diag+1; jj < rows[idx_col].nnz; ++jj ) {
+                size_type idx_row = rows[idx_col].ja[jj];
                 row_temp[idx_row] -= mult * rows[idx_col].a[jj];
             }
         } // j-loop for L of previously factored rows
 
         // gather nonzero entries in row_temp into packed form
-        for (size_t j = 0; j < rows[i].nnz; ++j) {
-            size_t idx = rows[i].ja[j];
+        for (size_type j = 0; j < rows[i].nnz; ++j) {
+            size_type idx = rows[i].ja[j];
             rows[i].a[j] = row_temp[idx];
             row_temp[idx] = 0.0;
         }
@@ -265,12 +265,12 @@ void SparseILU::solve(const FullVector<double>& b, FullVector<double>& x) const 
     FullVector<double> y(n);
 
     // load b (in old order) into y (in new order)
-    for (size_t i = 0; i < n; ++i)
+    for (size_type i = 0; i < n; ++i)
         y[i] = b[ order_new2old[i] ];
 
     // solve Ly = b
-    for (size_t i = 0; i < n; ++i) {
-        for (size_t j = 0; j < rows[i].diag; ++j) {
+    for (size_type i = 0; i < n; ++i) {
+        for (size_type j = 0; j < rows[i].diag; ++j) {
             y[i] -=  rows[i].a[j] * y[ rows[i].ja[j] ];
         }
     }
@@ -294,7 +294,7 @@ void SparseILU::print_level_of_fill(std::ostream& os) const {
     const unsigned int width = PRINT_WIDTH_UNSIGNED_INT;
 
     for (auto i = rows.cbegin(); i != rows.cend(); ++i) {
-        for (size_t j = 0, jj = 0; j < n; ++j) {
+        for (size_type j = 0, jj = 0; j < n; ++j) {
             if ( jj < i->nnz && i->ja[jj] == j ) {
                 os << std::setw(width) << std::right << i->level_of_fill[jj];
                 ++jj;

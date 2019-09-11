@@ -6,7 +6,7 @@ int main() {
     double a[] = {1, 2, 3, 4, 5};
     FullVector<double>::size_type na = sizeof(a)/sizeof(double);
     FullVector<double> xa(na, a);
-    // std::cout << xa << std::endl;
+    std::cout << xa[2] << std::endl;
     FullVector<double> xb(std::move(xa));
     FullVector<double> xc(xb);
     std::cout << xc*xb << std::endl;

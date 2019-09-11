@@ -58,15 +58,42 @@ FullVector<T>::~FullVector() {
 
 /* ------ Operator Overloading ------ */
 template <typename T>
+const T& FullVector<T>:: operator[](size_type i) const {
+    assert(i >= 0 && i < n);
+    return a[i];
+    // This also works... but tedious
+    // return (*(const_cast<FullVector<T>*>(this)))[i];
+}
+
+template <typename T>
 T& FullVector<T>:: operator[](size_type i) {
     assert(i >= 0 && i < n);
     return a[i];
 }
 
 template <typename T>
-const T& FullVector<T>:: operator[] (size_type i) const {
-    assert(i >= 0 && i < n);
-    return a[i];
+T& FullVector<T>:: operator[](long int i) {
+    size_type ii = (i < 0) ? ( n + i ) : i;
+    assert(ii >= 0 && ii < n);
+    return a[ii];
+}
+
+template <typename T>
+const T& FullVector<T>::operator[](long int i) const {
+    // reusing [] defined for non-const
+    return (*const_cast< FullVector<T>* >(this))[i];
+}
+
+template <typename T>
+T& FullVector<T>:: operator[](int i) {
+    int ii = (i < 0) ? ( n + i ) : i;
+    assert(ii >= 0 && ii < n);
+    return a[ii];
+}
+
+template <typename T>
+const T& FullVector<T>:: operator[](int i) const {
+    return ( *const_cast< FullVector<T>* > (*this) )[i];
 }
 
 template <typename T>
