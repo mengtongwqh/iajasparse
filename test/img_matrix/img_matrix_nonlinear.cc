@@ -4,6 +4,7 @@
 #include <string>
 
 using std::cout; using std::endl; using std::ofstream;
+using iaja::ImgMatrixPCG;
 using iaja::ImgMatrixOrthomin;
 
 int main(int argc, char **args) {
@@ -14,8 +15,8 @@ int main(int argc, char **args) {
     // parameters for solver
     std::size_t ngrid = atoi(args[1]);
     unsigned int max_iter = 10000;
-    double tol = 1e-2;
-    unsigned int max_level_of_fill = 1;
+    double tol = 1e-10;
+    unsigned int max_level_of_fill = 2;
     unsigned int n_orth = 5;
 
     std::string reorder_method = "natural";

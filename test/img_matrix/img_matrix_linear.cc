@@ -14,12 +14,13 @@ int main(int argc, char **args) {
 
     std::size_t ngrid = atoi(args[1]);
     unsigned int max_iter = 10000;
-    double tol = 1e-20;
+    double tol = 1e-10;
     unsigned int max_level_of_fill = 0;
     std::string reorder_method = "natural";
 
 
     // construct testing object
+    // ImgMatrixPCG testobj(ngrid, max_iter, tol);
     ImgMatrixPCG testobj(ngrid, max_iter, tol);
 
     // build lhs and rhs
@@ -37,8 +38,11 @@ int main(int argc, char **args) {
     ofs << testobj.lhs << std::endl;
     ofs << "RHS is:" << std::endl;
     ofs << testobj.rhs << std::endl;
+    ofs << "ILU is:" << std::endl;
+    testobj.solver.get_ilu_pattern(ofs);
 
     testobj.solver.symbolic_factor(reorder_method, max_level_of_fill);
+    std::cout << testobj.x << std::endl;
     if (testobj.solver.iterative_solve(testobj.rhs, testobj.x) == EXIT_SUCCESS)
         std::cout << "iterative solver completed: " << testobj.solver.get_residual_norm()
             << " after iteration count " << testobj.solver.get_iter_count() << std::endl;
