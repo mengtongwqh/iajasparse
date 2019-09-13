@@ -74,7 +74,7 @@ T& FullVector<T>:: operator[](size_type i) {
 template <typename T>
 T& FullVector<T>:: operator[](long int i) {
     size_type ii = (i < 0) ? ( n + i ) : i;
-    assert(ii >= 0 && ii < n);
+    assert(ii >= 0 && static_cast<size_type>(i) < n);
     return a[ii];
 }
 
@@ -87,7 +87,7 @@ const T& FullVector<T>::operator[](long int i) const {
 template <typename T>
 T& FullVector<T>:: operator[](int i) {
     int ii = (i < 0) ? ( n + i ) : i;
-    assert(ii >= 0 && ii < n);
+    assert(ii >= 0 && static_cast<size_type>(ii) < n);
     return a[ii];
 }
 

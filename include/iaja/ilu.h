@@ -10,7 +10,7 @@
 
 IAJA_NAMESPACE_OPEN
 
-class SparseILURow : public SparseVector<double>{
+class SparseILURow : public SparseVector<double> {
 
   friend class SparseILU;
 

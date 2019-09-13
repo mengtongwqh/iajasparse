@@ -74,7 +74,6 @@ int PCG::iterative_solve(const FullVector<double>& b, FullVector<double>& x) {
     const unsigned int N = A.nrow();
     FullVector<double> r(N), rt(N), p(N), q(N);
 
-
     // init search and residual vector
     // std::cout << x << std::endl;
     residual(b, x, r);

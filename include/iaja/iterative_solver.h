@@ -18,6 +18,7 @@ class IterativeSolverILU {
   virtual ~IterativeSolverILU() = default;
   unsigned int get_iter_count() { return iter_count; }
   double get_residual_norm() { return residual_norm; }
+  void get_ilu_pattern(std::ostream& os) { os << ilu; }
 
  protected:
   const unsigned int max_iter; // default = 10000
