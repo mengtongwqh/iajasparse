@@ -1,4 +1,4 @@
-
+#include <iaja/iaja_config.h>
 #include <iaja/ilu.h>
 
 #include <algorithm>
@@ -217,6 +217,10 @@ void SparseILU::factor() {
 
     assert(order_new2old && order_old2new);
 
+#ifdef PROFILING
+    clock_t begin = clock();
+#endif
+
     // allocate temp vector
     FullVector<double> row_temp(n);
 
@@ -254,6 +258,13 @@ void SparseILU::factor() {
             row_temp[idx] = 0.0;
         }
     } // i(row)-loop
+
+#ifdef PROFILING
+    clock_t end = clock();
+    std::cout << "Timing for ILU numerical factorization: " << std::scientific <<
+        ( static_cast<double>(end - begin)/static_cast<double>(CLOCKS_PER_SEC) )
+        << "\n";
+#endif
 }
 
 
