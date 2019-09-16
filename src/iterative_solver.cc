@@ -123,7 +123,7 @@ int PCG::iterative_solve(const FullVector<double>& b, FullVector<double>& x) {
     if (iter_count < max_iter) {
         return EXIT_SUCCESS;
     } else {
-        std::cerr << "PCG failed to converge after max_iter" << std::endl;
+        std::cerr << "PCG failed to converge after max_iter " << max_iter << std::endl;
         exit(EXIT_FAILURE);
     }
 }
@@ -188,7 +188,7 @@ int Orthomin::iterative_solve(const FullVector<double>& b, FullVector<double>& x
     if (iter_count < max_iter) {
         return EXIT_SUCCESS;
     } else {
-        std::cerr << "Orthomin failed to converge after max_iter" << std::endl;
+        std::cerr << "Orthomin failed to converge after max_iter " << max_iter << std::endl;
         exit(EXIT_FAILURE);
     }
 }
