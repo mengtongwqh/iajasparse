@@ -11,7 +11,7 @@ class IterativeSolverILU {
 
  public:
   /* constructor and destructor */
-  IterativeSolverILU(SparseMatrix<double>& A,
+  IterativeSolverILU(SparseMatrixIaja<double>& A,
           unsigned int max_iter = 10000,
           double tol = 1.0e-6)
       : max_iter(max_iter), tol(tol), iter_count(0), A(A), ilu(A) {}
@@ -25,7 +25,7 @@ class IterativeSolverILU {
   const double tol; // default = 1.0e-6
   unsigned int iter_count;
   double residual_norm;
-  SparseMatrix<double>& A;
+  SparseMatrixIaja<double>& A;
   SparseILU ilu;
 
   void residual(const FullVector<double>& b,
@@ -51,7 +51,7 @@ class PCG : public IterativeSolverILU {
 
  public:
   /* ctor and dtor */
-  PCG(SparseMatrix<double>& A,
+  PCG(SparseMatrixIaja<double>& A,
           unsigned int max_iter = 10000, double tol = 1e-6)
     : IterativeSolverILU(A, max_iter, tol) {}
   virtual ~PCG() = default;
@@ -60,7 +60,7 @@ class PCG : public IterativeSolverILU {
   int iterative_solve(const FullVector<double>& b, FullVector<double>& soln);
 
  private:
-  unsigned int interval_residual_recompute = 50;
+  unsigned int interval_residual_recompute = 5;
 };
 
 
@@ -71,7 +71,7 @@ class Orthomin : public IterativeSolverILU {
 
  public:
   /* ctor and dtor */
-  Orthomin(SparseMatrix<double>& A, unsigned int k_orth = 5,
+  Orthomin(SparseMatrixIaja<double>& A, unsigned int k_orth = 5,
           unsigned int max_iter = 10000, double tol = 1e-6)
     : IterativeSolverILU(A, max_iter, tol), k_orth(k_orth) {}
   virtual ~Orthomin() = default;
