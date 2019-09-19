@@ -8,10 +8,10 @@
 IAJA_NAMESPACE_OPEN
 
 // headers for reordering schemes
-extern "C" {
-    #include "include/mindeg.h"
-    #include "include/rcm.h"
-}
+// extern "C" {
+    // #include "include/mindeg.h"
+    // #include "include/rcm.h"
+// }
 
 
 /* ============================================ *
@@ -25,13 +25,14 @@ SparseILURow::SparseILURow(SparseILURow&& rhs)
     level_of_fill(std::move(rhs.level_of_fill)),
     diag(rhs.diag) {}
 
+
 /* ============================================ *
  *                SPARSEILU                     *
  * ============================================ */
 
 /***** Constructors and Destructors *****/
 
-SparseILU::SparseILU(SparseMatrix<double>& mtrx)
+SparseILU::SparseILU(SparseMatrixIaja<double>& mtrx)
     : A(mtrx), n(mtrx.nrow()),
     order_new2old(mtrx.nrow()),
     order_old2new(mtrx.nrow()) {
@@ -59,9 +60,9 @@ void SparseILU::reorder(const std::string& reorder_method) {
     // reordering
     if ( reorder_method == "natural" ) {
         for (size_type i = 0; i < n; ++i) order_new2old[i] = i;
-    } else if (reorder_method == "mindeg") {
+    // } else if (reorder_method == "mindeg") {
         // mindeg(A.ia, A.ja, n, A.nonzeros(), order_new2old);
-    } else if (reorder_method == "rcm") {
+    // } else if (reorder_method == "rcm") {
         // rcm(A.ia, A.ja, n, A.nonzeros(), order_new2old);
     } else {
         std::cerr << reorder_method
@@ -133,7 +134,7 @@ void SparseILU::analyse(const unsigned int max_level_of_fill) {
             row_linked_list[klist] = n + 1; // linked list end
 
             // set the level of original entries to 0
-            for ( klist = list_begin;
+            for ( size_type klist = list_begin;
                     klist != n+1;
                     klist = row_linked_list[klist] ) {
                 row_level_of_fill[klist] = 0;
@@ -146,7 +147,7 @@ void SparseILU::analyse(const unsigned int max_level_of_fill) {
             // allocate sparseILURow for this row
             rows.push_back(SparseILURow(n, nnzrow));
             // skip thru linked list and extract level-of-fill and jaf
-            for (size_type j = 0, klist = list_begin;
+            for (size_type klist = list_begin, j = 0;
                     klist != n+1;
                     klist = row_linked_list[klist], ++j) {
                 rows[i].ja[j] = klist;
@@ -185,7 +186,7 @@ void SparseILU::merge_linked_list(
             size_type klist = i;
 
             // loop thru each column in the ith-row
-            for ( size_type jj = rows[i].diag; jj < rows[i].nnz; ++jj ) {
+            for ( size_type jj = rows[i].diag+1; jj < rows[i].nnz; ++jj ) {
 
                 size_type j = rows[i].ja[jj];
                 unsigned int levelij = std::min(
@@ -194,23 +195,38 @@ void SparseILU::merge_linked_list(
 
                 // if the fill has been considered before
                 // no need to add it again to the linked list
-                if ( levelij <= max_level_of_fill && row_level_of_fill[j] > max_level_of_fill ) {
+                if ( levelij <= max_level_of_fill &&
+                        row_level_of_fill[j] > max_level_of_fill ) {
                     // otherwise add this fill to the linked list
-                    while ( row_linked_list[klist] < j )
+                    while ( row_linked_list[klist] < j ) {
                         // jump forward to the correct insert position
                         klist = row_linked_list[klist];
+                    }
+                    assert(klist < j);
+                    assert(row_linked_list[klist] > j);
                     size_type knext = row_linked_list[klist];
-                    // modify linked list pointers
+                    // insert this entry into the linked list
                     row_linked_list[klist] = j;
                     row_linked_list[j]     = knext;
+                    klist = j;
                     // increment nonzero count for this row
                     ++nnzrow;
                 }
-
                 row_level_of_fill[j] = levelij;
             } // jj-loop
         }
     } // i-loop
+
+#ifdef DEBUG
+        // make sure the list is in order
+        size_type j = 0;
+        for ( size_type i = list_begin;
+                i != n+1;
+                i = row_linked_list[i], ++j) {
+            assert(i < row_linked_list[i]);
+        }
+        assert(j == nnzrow);
+#endif
 }
 
 void SparseILU::factor() {
@@ -302,7 +318,7 @@ void SparseILU::solve(const FullVector<double>& b, FullVector<double>& x) const 
 
 void SparseILU::print_level_of_fill(std::ostream& os) const {
 
-    const unsigned int width = PRINT_WIDTH_UNSIGNED_INT;
+    const unsigned int width = 2;
 
     for (auto i = rows.cbegin(); i != rows.cend(); ++i) {
         for (size_type j = 0, jj = 0; j < n; ++j) {

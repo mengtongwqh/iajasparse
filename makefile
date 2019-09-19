@@ -3,7 +3,7 @@ export CC = gcc
 export CXX = g++
 
 # COMPILER FLAGS
-FLAGS_DEBUG = -g -pedantic -Wall -Wextra
+FLAGS_DEBUG = -g -pedantic -Wall -Wextra -DDEBUG
 FLAGS_RELEASE = -DNDEBUG -O2 -ffast-math -finline-functions
 debug: CXXFLAGS   := $(CXXFLAGS) $(FLAGS_DEBUG)
 debug: CFLAGS     := $(CFLAGS) $(FLAGS_DEBUG)

@@ -40,7 +40,7 @@ class SparseILU {
  public:
   using size_type = SparseILURow::size_type;
   /* constructors and destructors */
-  explicit SparseILU(SparseMatrix<double>& mtrx);
+  explicit SparseILU(SparseMatrixIaja<double>& mtrx);
   SparseILU(SparseILU&& rhs);
   virtual ~SparseILU() = default;
 
@@ -55,7 +55,7 @@ class SparseILU {
   void print_level_of_fill(std::ostream& os) const;
 
  protected:
-  SparseMatrix<double>& A;
+  SparseMatrixIaja<double>& A;
   size_type  n;
   FullVector<size_type> order_new2old; // order[new_order] = old_order
   FullVector<size_type> order_old2new; // invord[old_order] = new_order
