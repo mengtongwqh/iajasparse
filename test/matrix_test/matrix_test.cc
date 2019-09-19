@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <iaja/linalg_matrix.h>
 
 int main() {
@@ -21,11 +22,11 @@ int main() {
 
     std::cout << N << std::endl;
 
-    iaja::SparseMatrix<double> A(N, 5, NNZ, ia, ja, a);
+    iaja::SparseMatrixIaja<double> A(N, 5, NNZ, ia, ja, a);
     std::cout << "Original Matrix: \n";
     std::cout << A << std::endl;
 
-    iaja::SparseMatrix<double> B = A.transpose();
+    iaja::SparseMatrixIaja<double> B = A.transpose();
     std::cout << "Transposed Matrix: \n";
     std::cout << B << std::endl;
 

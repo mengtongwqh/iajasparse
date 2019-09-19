@@ -3,10 +3,11 @@
 #include <iaja/linalg_matrix.h>
 #include <iaja/linalg_vector.h>
 
+#include <cstddef>
 #include <iostream>
 using std::cout;
 using std::endl;
-using iaja::SparseMatrix;
+using iaja::SparseMatrixIaja;
 using iaja::FullVector;
 using iaja::SparseILU;
 
@@ -15,7 +16,7 @@ using iaja::SparseILU;
 
 int main(void) {
 
-    const unsigned int maxlevel = 3;
+    const unsigned int maxlevel = 1;
 
     /* allocate space */
     /* double *x = (double*)malloc( N*sizeof(double) );  [> soln <] */
@@ -44,7 +45,7 @@ int main(void) {
 
     std::size_t N = sizeof(ia)/sizeof(std::size_t) - 1;
     std::size_t NNZ = sizeof(a)/sizeof(double);
-    SparseMatrix<double> A(N, N, NNZ, ia, ja, a);
+    SparseMatrixIaja<double> A(N, N, NNZ, ia, ja, a);
     FullVector<double> b(N, barr);
     cout << "Orginal matrix is: \n" << A;
 

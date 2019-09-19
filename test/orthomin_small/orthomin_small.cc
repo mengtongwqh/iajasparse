@@ -7,7 +7,7 @@
 #include <iostream>
 using std::cout;
 using std::endl;
-using iaja::SparseMatrix;
+using iaja::SparseMatrixIaja;
 using iaja::FullVector;
 using iaja::Orthomin;
 
@@ -45,7 +45,7 @@ int main(void) {
 
     std::size_t N = sizeof(ia)/sizeof(std::size_t) - 1;
     std::size_t NNZ = sizeof(a)/sizeof(double);
-    SparseMatrix<double> A(N, N, NNZ, ia, ja, a);
+    SparseMatrixIaja<double> A(N, N, NNZ, ia, ja, a);
     FullVector<double> b(N, barr);
     cout << "Orginal matrix is: \n" << A << endl;
     cout << "right hand side matrix is: \n" << b << endl;

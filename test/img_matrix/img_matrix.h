@@ -28,7 +28,7 @@ class ImgMatrixTest  {
   size_type N;
 
   // matrix structure
-  SparseMatrix<double> lhs;
+  SparseMatrixIaja<double> lhs;
   FullVector<double> rhs;
   FullVector<double> x;
   // PCG solver;
