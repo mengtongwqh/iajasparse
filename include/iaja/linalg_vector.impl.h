@@ -23,6 +23,7 @@ FullVector<T>::FullVector() {
 template <typename T>
 FullVector<T>::FullVector(size_type n_in) {
     // allocate and 0-init
+    // TODO use placement new?
     n = n_in;
     a = new T[n]();
 }
@@ -128,7 +129,7 @@ FullVector<T>& FullVector<T>:: operator= (const std::vector<T>& rhs) {
         n = rhs.size();
         size_type ctr = 0;
         for (auto i = rhs.cbegin(); i != rhs.cend(); ++i) {
-            a[ctr] = *i; ++ctr;
+            a[ctr++] = *i;
         }
     }
     return *this;
@@ -136,6 +137,12 @@ FullVector<T>& FullVector<T>:: operator= (const std::vector<T>& rhs) {
 
 template <typename T>
 std::ostream& operator<< (std::ostream& os, const FullVector<T>& x) {
+    for (decltype(x.n) i = 0; i < x.n; ++i) os << x.a[i] << " "; 
+    return os;
+}
+
+template <> inline
+std::ostream& operator<< (std::ostream& os, const FullVector<double>& x) {
     const unsigned int width = PRINT_WIDTH_DOUBLE;
     for (decltype(x.n) i = 0; i < x.n; ++i)
             os << std::setw(width) << std::scientific <<std::right<< x.a[i];
@@ -173,7 +180,7 @@ void FullVector<T>::minus(const FullVector<T>& b, const FullVector<T>& c) {
 }
 
 template <typename T>
-void FullVector<T>::multiply(const SparseMatrix<T>& A, const FullVector<T>& x) {
+void FullVector<T>::multiply(const SparseMatrixIaja<T>& A, const FullVector<T>& x) {
 
     assert(A.ncol() == x.length());
     assert(A.nrow() == this->length());
@@ -196,7 +203,6 @@ void FullVector<T>::cumsum() {
     for ( size_type i = 1; i < n; ++i )
         a[i] += a[i-1];
 }
-
 
 /* ============================================ *
  *                SPARSEVECTOR                  *
@@ -237,6 +243,21 @@ SparseVector<T>::SparseVector(SparseVector&& rhs) :
 /* ------ Operator Overloading ------ */
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const SparseVector<T>& vin) {
+
+    for (decltype(vin.n) i = 0, j = 0; i < vin.n; ++i) {
+        if (j < vin.nnz && i == vin.ja[j]) {
+            os << vin.a[j] << " ";
+            ++j;
+        } else {
+            os << 0 << " ";
+        }
+    }
+
+    return os;
+}
+
+template <> inline
+std::ostream& operator<<(std::ostream& os, const SparseVector<double>& vin) {
 
     const unsigned int width = PRINT_WIDTH_DOUBLE;
 

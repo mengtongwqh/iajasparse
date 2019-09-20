@@ -2,13 +2,12 @@
 #define _LINALG_VECTOR_H_
 
 #include <iaja/iaja_config.h>
-#include <cstddef>
 #include <iostream>
 #include <vector>
 
 IAJA_NAMESPACE_OPEN
 
-template <typename T> class SparseMatrix;
+template <typename T> class SparseMatrixIaja;
 
 /* A little more than the a naked pointer to a block of heap */
 template<typename T>
@@ -17,7 +16,7 @@ class FullVector {
  public:
   // standard data types similar to std library containers
   using value_type      = T;
-  using size_type       = std::size_t;
+  using size_type       = SizeType;
   using pointer         = value_type *;
   using const_pointer   = const value_type *;
   using iterator        = value_type *;
@@ -41,7 +40,7 @@ class FullVector {
   const T& operator[] (size_type i) const;
   T& operator[] (long int i);
   const T& operator[] (long int i) const;
-  T& operator[] (int i); // resolve ambiguous overload
+  T& operator[] (int i);
   const T& operator[] (int i) const;
 
   T operator* (const FullVector<T>& x) const;
@@ -55,7 +54,7 @@ class FullVector {
   void saxpy(T alpha, const FullVector<T>& x, const FullVector<T>& y);
   void add(const FullVector<T>& b, const FullVector<T>& c);
   void minus(const FullVector<T>& b, const FullVector<T>& c);
-  void multiply(const SparseMatrix<T>& A, const FullVector<T>& x);
+  void multiply(const SparseMatrixIaja<T>& A, const FullVector<T>& x);
   void multiply(const T& s);
   void cumsum();
 
@@ -71,7 +70,7 @@ class SparseVector {
  public:
   // standard data types similar to std library containers
   using value_type      = T;
-  using size_type       = std::size_t;
+  using size_type       = SizeType;
   using pointer         = value_type *;
   using const_pointer   = const value_type *;
   using iterator        = value_type *;
