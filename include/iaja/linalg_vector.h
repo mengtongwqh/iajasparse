@@ -2,6 +2,7 @@
 #define _LINALG_VECTOR_H_
 
 #include <iaja/iaja_config.h>
+
 #include <iostream>
 #include <vector>
 
@@ -14,7 +15,6 @@ template<typename T>
 class FullVector {
 
  public:
-  // standard data types similar to std library containers
   using value_type      = T;
   using size_type       = SizeType;
   using pointer         = value_type *;
@@ -24,39 +24,57 @@ class FullVector {
   using reference       = value_type &;
   using const_reference = const value_type &;
 
-  // constructor and destructor
-  FullVector();
-  explicit FullVector(size_type n);
+  /* ctor */
+  FullVector() : n(0), a(nullptr) {}
+  explicit FullVector(size_type n) : n(n), a(new T[n]()) {}
   FullVector(size_type n, const T* a);
+  /* copy ctor */
   FullVector(const FullVector<T>& v);
+  /* copy assign */
+  FullVector<T>& operator= (const FullVector<T>& rhs);
+  FullVector<T>& operator= (const std::vector<T>& rhs);
+  /* move ctor */
   FullVector(FullVector<T>&& v);
+  /* move assign */
+  FullVector<T>& operator= (FullVector<T>&& rhs);
+  /* dtor */
   virtual ~FullVector();
 
-  // operator overloading
+  /* iterator */
+  iterator begin() { return a; }
+  iterator end() { return (a+n); }
+  const_iterator cbegin() const { return a; }
+  const_iterator cend() const { return (a+n);  }
+
+  /* conversion operator */
+  operator T*() { return a; } // collapse to pointer to array
+
+  /* indexing */
+  reference operator[] (size_type i);
+  const_reference operator[] (size_type i) const;
+  reference operator[] (long int i);
+  const_reference operator[] (long int i) const;
+  reference operator[] (int i);
+  const_reference operator[] (int i) const;
+
+  /* I/O */
   template <typename U>
   friend std::ostream& operator<< (std::ostream& os, const FullVector<U>& x);
 
-  T& operator[] (size_type i);
-  const T& operator[] (size_type i) const;
-  T& operator[] (long int i);
-  const T& operator[] (long int i) const;
-  T& operator[] (int i);
-  const T& operator[] (int i) const;
-
-  T operator* (const FullVector<T>& x) const;
-  FullVector<T>& operator= (const FullVector<T>& rhs);
-  FullVector<T>& operator= (const std::vector<T>& rhs);
-  operator T*() { return a; }
-
-  // member functions
+  /* size & dimension */
   size_type length() const {return n;}
-  T norm_l2() const;
+
+  /* numerical operation */
+  void cumsum();
+  value_type norm_l2() const;
+  T  operator* (const FullVector<T>& x) const; // dot product
+  FullVector<T>& operator*=(const T& s); // scalar multiply
+  // inplace operations
   void saxpy(T alpha, const FullVector<T>& x, const FullVector<T>& y);
   void add(const FullVector<T>& b, const FullVector<T>& c);
   void minus(const FullVector<T>& b, const FullVector<T>& c);
   void multiply(const SparseMatrixIaja<T>& A, const FullVector<T>& x);
   void multiply(const T& s);
-  void cumsum();
 
  protected:
   size_type n;
@@ -68,7 +86,6 @@ template <typename T>
 class SparseVector {
 
  public:
-  // standard data types similar to std library containers
   using value_type      = T;
   using size_type       = SizeType;
   using pointer         = value_type *;
@@ -78,23 +95,39 @@ class SparseVector {
   using reference       = value_type &;
   using const_reference = const value_type &;
 
-  // constructors and destructors
+  /* ctor */
   SparseVector();
   SparseVector(size_type n , size_type nnz);
   SparseVector(size_type n, size_type nnz, const size_type* ja, const T* a);
+  /* copy ctor */
   SparseVector(const SparseVector<T>& rhs);
+  /* copy assign */
+  SparseVector<T>& operator= (const SparseVector<T>& rhs);
+  /* move ctor */
   SparseVector(SparseVector<T>&& rhs);
+  /* move assign */
+  SparseVector<T>& operator=(SparseVector<T>&& rhs);
+  /* dtor */
   virtual ~SparseVector() = default;
 
-  /* operator overloading */
+  /* iterator */
+  iterator begin() {return a.begin();}
+  iterator end() {return a.end();}
+  iterator cbegin() const {return a.cbegin();}
+  iterator cend() const {return a.cend();}
+
+  /* I/O */
   template <typename U>
   friend std::ostream& operator<< (std::ostream& os, const SparseVector<U>& vin);
-  T& operator[](size_type i);
-  const T& operator[] (size_type i) const;
+  std::ostream& print_compressed(std::ostream& os) const;
 
-  /* public interfaces */
+  /* indexing */
+  reference operator[](size_type i);
+  const_reference operator[] (size_type i) const;
+
+  /* dimension */
   size_type length() const { return n; }
-  size_type nonzeros() const { return nnz; }
+  size_type nnonzero() const { return nnz; }
 
  protected:
   size_type n;
