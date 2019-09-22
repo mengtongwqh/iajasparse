@@ -2,84 +2,103 @@
 
 #include <cassert>
 #include <iomanip>
+#include <iostream>
+#include <utility>
 
 IAJA_NAMESPACE_OPEN
 
-/* -------------------------------------------
- * Constructors and destructors 
- * ------------------------------------------- */
+/* ----------------------
+ *  Ctor, Dtor, Assign
+ * ---------------------- */
+
+template <typename T>
+SparseMatrixIaja<T>::SparseMatrixIaja(size_type nr, size_type nc, size_type nnz,
+        const size_type* ia, const size_type* ja):
+    SparsityIaja(nr, nc, nnz, ia, ja), a(nnz) {}
+
+template <typename T>
+SparseMatrixIaja<T>::SparseMatrixIaja(size_type nr, size_type nc, size_type nnz,
+        const size_type* ia, const size_type* ja, const T& a):
+    SparsityIaja(nr, nc, nnz, ia, ja), a(nnz, a) {}
+
 template <typename T>
 SparseMatrixIaja<T>::SparseMatrixIaja(size_type nr, size_type nc,  size_type nnz,
-        const size_type* ia, const size_type* ja, const double* a):
-    ia(nr+1, ia), ja(nnz, ja), a(nnz, a), nr(nr), nc(nc), nnz(nnz) {}
+        const size_type* ia, const size_type* ja, const T* a):
+    SparsityIaja(nr, nc, nnz, ia, ja), a(nnz, a) {}
 
 template <typename T>
-SparseMatrixIaja<T>::SparseMatrixIaja(size_type nr, size_type nc, size_type nnz)
-    : ia(nr+1), ja(nnz), a(nnz), nr(nr), nc(nc), nnz(nnz) {}
-
+SparseMatrixIaja<T>::SparseMatrixIaja(size_type nc,
+        const FullVector<size_type>& ia, const FullVector<size_type>& ja, const FullVector<T>& a):
+    SparsityIaja(nc, ia, ja), a(a) { assert(ja.length() == a.length()); }
 
 template <typename T>
-SparseMatrixIaja<T>::SparseMatrixIaja(const SparseMatrixIaja<T>& mat)
-    : ia(mat.ia), ja(mat.ja), a(mat.a), nr(mat.nr), nc(mat.nc), nnz(mat.nnz) {}
+SparseMatrixIaja<T>::SparseMatrixIaja(SparseMatrixIaja<T>&& rhs):
+    SparsityIaja(std::move(rhs)),a(std::move(a)) {}
 
-
-/* -------------------------------------------
- * Operator overloading
- * ------------------------------------------- */
 template <typename T>
-SparseMatrixIaja<T>& SparseMatrixIaja<T>:: operator= (const SparseMatrixIaja<T>& rhs) {
+SparseMatrixIaja<T>& SparseMatrixIaja<T>:: operator=(SparseMatrixIaja<T>&& rhs) {
     if (this != &rhs) {
-        ja = rhs.ja; ia = rhs.ia; a = rhs.a;
-        nr = rhs.nr; nc = rhs.nc; nnz = rhs.nnz;
+        SparsityIaja::operator=(std::move(rhs));
+        a = std::move(rhs.a);
     }
     return *this;
 }
 
+/* ----------
+ *    I/O
+ * ---------- */
+
 template <typename T>
-std::ostream& operator<< (std::ostream& os, const SparseMatrixIaja<T>& mtrx) {
+std::ostream& operator<<(std::ostream& os, const SparseMatrixIaja<T>& mtrx) {
 
-    using size_type = decltype(mtrx.nr);
-    size_type ctr = 0;
+    using size_type = typename SparseMatrixIaja<T>::size_type;
 
-    // row loop
-    for (size_type i = 0; i < mtrx.nr; ++i) {
-        // column loop
+    for (size_type i = 0, ctr = 0; i < mtrx.nr; ++i) {
         for (size_type j = 0; j < mtrx.nc ; ++j) {
             if ( ctr < mtrx.ia[i+1] && mtrx.ja[ctr] == j ) {
                 os << mtrx.a[ctr++] << " ";
             } else {
-                os << std::right << 0 << " ";
+                os << std::left << 0 << " ";
             }
-        } // j
+        } // column loop
         os << "\n";
-    }  // i
+    }  // row loop
 
     return os;
 }
+
 
 template <> inline
 std::ostream& operator<<(std::ostream& os, const SparseMatrixIaja<double>& mtrx) {
 
-    using size_type = decltype(mtrx.nr);
-    const unsigned int width = PRINT_WIDTH_DOUBLE;
-    size_type ctr = 0;
+    using size_type = SparseMatrixIaja<double>::size_type;
+    auto width = PRINT_WIDTH_DOUBLE;
 
-    // row loop
-    for (size_type i = 0; i < mtrx.nr; ++i) {
-        // column loop
+    for (size_type i = 0, ctr = 0; i < mtrx.nr; ++i) {
         for (size_type j = 0; j < mtrx.nc ; ++j) {
             if ( ctr < mtrx.ia[i+1] && mtrx.ja[ctr] == j ) {
-                os << std::setw(width) << std::scientific << std::right
-                    << mtrx.a[ctr++] << " ";
+                os << std::setw(width) << std::scientific << std::left
+                    << mtrx.a[ctr++];
             } else {
-                os << std::setw(width) << std::scientific << std::right << 0 << " ";
+                os << std::setw(width) << std::scientific << std::left << 0;
             }
-        } // j
+        } // column loop
         os << "\n";
-    }  // i
+    }  // row loop
 
     return os;
 }
+
+template <typename T>
+std::ostream& SparseMatrixIaja<T>::print_compressed(std::ostream& os) const {
+    os << nr <<"\n" << nnz << "\n" <<
+        ia << "\n" << ja << "\n" << a << "\n";
+    return os;
+}
+
+/* ---------------
+ *    INDEXING
+ * --------------- */
 
 template <typename T>
 T& SparseMatrixIaja<T>:: operator[](size_type i) {
@@ -92,6 +111,11 @@ const T& SparseMatrixIaja<T>:: operator[](size_type i) const {
     assert(i >= 0 && i < nnz);
     return a[i];
 }
+
+
+/* ----------------
+ *    NUMERICS
+ * ---------------- */
 
 template <typename T>
 FullVector<T> SparseMatrixIaja<T>:: operator* (const FullVector<T> x) const {
@@ -107,9 +131,7 @@ FullVector<T> SparseMatrixIaja<T>:: operator* (const FullVector<T> x) const {
     return y;
 }
 
-/* -------------------------------------------
- * Methods
- * ------------------------------------------- */
+
 template <typename T>
 SparseMatrixIaja<T> SparseMatrixIaja<T>::transpose() const {
 
@@ -136,13 +158,6 @@ SparseMatrixIaja<T> SparseMatrixIaja<T>::transpose() const {
     }
 
     return At;
-}
-
-template <typename T>
-std::ostream& SparseMatrixIaja<T>::print_compressed(std::ostream& os) const {
-    os << nr <<"\n" << nnz << "\n" <<
-        ia << "\n" << ja << "\n" << a << "\n";
-    return os;
 }
 
 // template <typename T>

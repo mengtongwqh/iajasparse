@@ -14,12 +14,30 @@ IAJA_NAMESPACE_OPEN
  *                  VECTOR                      *
  * ============================================ */
 
-/* ------ Ctor, Dtor, Assign ------ */
+/* ---------------------
+ *   Ctor, Dtor, Assign 
+ * --------------------- */
+
+template <typename T>
+FullVector<T>::FullVector(size_type n, const T& val) :
+    n(n), a(new T[n]) {
+    for (size_type i = 0; i < n; ++i ) a[i] = val;
+}
+
 template <typename T>
 FullVector<T>::FullVector(size_type n, const T* arr)
     : n(n), a(new T[n]) {
     for (size_type i = 0; i < n; ++i)
         a[i] = arr[i];
+}
+
+template <typename T>
+FullVector<T>::FullVector(const std::vector<T>& rhs) {
+    n = rhs.size();
+    size_type ctr = 0;
+    for (auto i = rhs.cbegin(); i != rhs.cend(); ++i) {
+        a[ctr++] = *i;
+    }
 }
 
 template <typename T>
@@ -53,22 +71,6 @@ FullVector<T>& FullVector<T>:: operator= (const FullVector<T>& rhs) {
 }
 
 template <typename T>
-FullVector<T>& FullVector<T>:: operator= (const std::vector<T>& rhs) {
-    if (n != rhs.size()) {
-        if (n != 0) {
-            delete[] a;
-            a = new T[rhs.size()];
-        }
-        n = rhs.size();
-        size_type ctr = 0;
-        for (auto i = rhs.cbegin(); i != rhs.cend(); ++i) {
-            a[ctr++] = *i;
-        }
-    }
-    return *this;
-}
-
-template <typename T>
 FullVector<T>& FullVector<T>:: operator= (FullVector<T>&& rhs) {
     if (this != &rhs) {
         if (n != 0) delete[] a;
@@ -78,7 +80,10 @@ FullVector<T>& FullVector<T>:: operator= (FullVector<T>&& rhs) {
     return *this;
 }
 
-/* ------ Indexing ------ */
+/* ------------
+ *  Indexing
+ * ------------ */
+
 template <typename T>
 const T& FullVector<T>:: operator[](size_type i) const {
     assert(i >= 0 && i < n);
@@ -127,23 +132,31 @@ T FullVector<T>:: operator* (const FullVector<T>& x) const {
 }
 
 
-/* ----- I/O ----- */
+/* ---------
+ *   I/O 
+ * --------- */
+
 template <typename T>
 std::ostream& operator<< (std::ostream& os, const FullVector<T>& x) {
-    for (decltype(x.n) i = 0; i < x.n; ++i) os << x.a[i] << " "; 
+    for (auto i = x.cbegin(); i != x.cend(); ++i)
+        os << *i << " ";
     return os;
 }
 
 template <> inline
 std::ostream& operator<< (std::ostream& os, const FullVector<double>& x) {
     const unsigned int width = PRINT_WIDTH_DOUBLE;
-    for (decltype(x.n) i = 0; i < x.n; ++i)
-            os << std::setw(width) << std::scientific <<std::right<< x.a[i];
+    for (auto i = x.cbegin(); i != x.cend(); ++i)
+            os << std::setw(width) << std::scientific
+                << std::left << *i;
     return os;
 }
 
 
-/* ------ Numerical Operations ------- */
+/* -------------------------
+ *   Numerical Operations 
+ * ------------------------- */
+
 template <typename T> inline
 FullVector<T>& FullVector<T>:: operator*=(const T& s) {
     for (auto i = begin(); i != end(); ++i) *i = *i * s;
@@ -208,7 +221,10 @@ void FullVector<T>::cumsum() {
  *                SPARSEVECTOR                  *
  * ============================================ */
 
-/* ------ Ctor, Dtor, Assign ------ */
+/* ---------------------
+ *  Ctor, Dtor, Assign 
+ * --------------------- */
+
 template <typename T>
 SparseVector<T>::SparseVector():
     ja(), a() {
@@ -216,10 +232,12 @@ SparseVector<T>::SparseVector():
 }
 
 template <typename T>
-SparseVector<T>::SparseVector(size_type n_in, size_type nnz_in):
-    n(n_in), nnz(nnz_in), ja(nnz_in), a(nnz_in) {
-    assert(nnz_in <= n_in);
-}
+SparseVector<T>::SparseVector(size_type n, size_type nnz, const size_type* ja):
+    n(n), nnz(nnz), ja(nnz, ja), a(nnz) {}
+
+template <typename T>
+SparseVector<T>::SparseVector(size_type n, size_type nnz, const size_type* ja, const T& val):
+    n(n), nnz(nnz), ja(nnz, ja), a(nnz, val) {}
 
 template <typename T>
 SparseVector<T>::SparseVector(size_type n_in, size_type nnz_in,
@@ -231,24 +249,10 @@ SparseVector<T>::SparseVector(size_type n_in, size_type nnz_in,
 }
 
 template <typename T>
-SparseVector<T>::SparseVector(const SparseVector& rhs)
-    :n(rhs.n), nnz(rhs.nnz), ja(rhs.ja), a(rhs.a) {
-}
-
-template <typename T>
 SparseVector<T>::SparseVector(SparseVector&& rhs)
     : n(rhs.n), nnz(rhs.nnz),
     ja(std::move(rhs.ja)), a(std::move(rhs.a)) {
     rhs.n = rhs.nnz = 0;
-}
-
-template <typename T>
-SparseVector<T>& SparseVector<T>:: operator=(const SparseVector<T>& rhs) {
-    if (this != &rhs) {
-        n = rhs.n; nnz = rhs.nnz;
-        ja = rhs.ja; a = rhs.a;
-    }
-    return *this;
 }
 
 template <typename T>
@@ -262,7 +266,10 @@ SparseVector<T>& SparseVector<T>:: operator=(SparseVector<T>&& rhs) {
     return *this;
 }
 
-/* ----- Indexing ----- */
+/* ---------------
+ *    Indexing 
+ * --------------- */
+
 template <typename T>
 T& SparseVector<T>:: operator[](size_type i) {
     assert(i >= 0 && i < nnz);
@@ -275,18 +282,20 @@ const T& SparseVector<T>:: operator[](size_type i) const {
     return a[i];
 }
 
-/* ------ I/O ------ */
+/* ------
+ *  I/O
+ * ------ */
+
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const SparseVector<T>& vin) {
-
     for (decltype(vin.n) i = 0, j = 0; i < vin.n; ++i) {
         if (j < vin.nnz && i == vin.ja[j]) {
             os << vin.a[j] << " ";
             ++j;
         } else {
             os << 0 << " ";
+        }
     }
-
     return os;
 }
 
@@ -297,13 +306,11 @@ std::ostream& operator<<(std::ostream& os, const SparseVector<double>& vin) {
 
     for (decltype(vin.n) i = 0, j = 0; i < vin.n; ++i) {
         if (j < vin.nnz && i == vin.ja[j]) {
-            os << std::setw(width) << std::scientific <<std::right<< vin.a[j];
-            ++j;
+            os << std::setw(width) << std::scientific <<std::left<< vin.a[j++];
         } else {
-            os << std::setw(width) << std::scientific << std::right << 0;
+            os << std::setw(width) << std::scientific << std::left << 0;
         }
     }
-
     return os;
 }
 

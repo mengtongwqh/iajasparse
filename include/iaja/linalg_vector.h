@@ -27,12 +27,13 @@ class FullVector {
   /* ctor */
   FullVector() : n(0), a(nullptr) {}
   explicit FullVector(size_type n) : n(n), a(new T[n]()) {}
+  explicit FullVector(const std::vector<T>& rhs);
+  FullVector(size_type n, const T& a);
   FullVector(size_type n, const T* a);
   /* copy ctor */
   FullVector(const FullVector<T>& v);
   /* copy assign */
   FullVector<T>& operator= (const FullVector<T>& rhs);
-  FullVector<T>& operator= (const std::vector<T>& rhs);
   /* move ctor */
   FullVector(FullVector<T>&& v);
   /* move assign */
@@ -97,12 +98,13 @@ class SparseVector {
 
   /* ctor */
   SparseVector();
-  SparseVector(size_type n , size_type nnz);
+  SparseVector(size_type n, size_type nnz, const size_type* ja);
+  SparseVector(size_type n, size_type nnz, const size_type* ja, const T& val);
   SparseVector(size_type n, size_type nnz, const size_type* ja, const T* a);
   /* copy ctor */
-  SparseVector(const SparseVector<T>& rhs);
+  SparseVector(const SparseVector<T>& rhs) = default;
   /* copy assign */
-  SparseVector<T>& operator= (const SparseVector<T>& rhs);
+  SparseVector<T>& operator= (const SparseVector<T>& rhs) = default;
   /* move ctor */
   SparseVector(SparseVector<T>&& rhs);
   /* move assign */
@@ -111,10 +113,10 @@ class SparseVector {
   virtual ~SparseVector() = default;
 
   /* iterator */
-  iterator begin() {return a.begin();}
-  iterator end() {return a.end();}
-  iterator cbegin() const {return a.cbegin();}
-  iterator cend() const {return a.cend();}
+  iterator begin() { return a.begin(); }
+  iterator end() { return a.end(); }
+  iterator cbegin() const { return a.cbegin(); }
+  iterator cend() const { return a.cend(); }
 
   /* I/O */
   template <typename U>
