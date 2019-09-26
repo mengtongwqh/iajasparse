@@ -15,9 +15,22 @@ class SparsityIaja {
 
   /* ctor */
   SparsityIaja();
-  // SparsityIaja(size_type nr, size_type nc, size_type nnz);
-  SparsityIaja(size_type nr, size_type nc, size_type nnz, const size_type* ia, const size_type* ja);
-  SparsityIaja(size_type nc, const FullVector<size_type>& ia, const FullVector<size_type>& ja);
+
+  SparsityIaja(size_type nr, size_type nc, size_type nnz,
+          const size_type* ia, const size_type* ja);
+
+  SparsityIaja(size_type nc,
+          const FullVector<size_type>& ia,
+          const FullVector<size_type>& ja);
+
+  SparsityIaja(size_type nc,
+          FullVector<size_type>&& ia,
+          FullVector<size_type>&& ja);
+
+  SparsityIaja(size_type nc,
+          const std::vector<size_type>& ia,
+          const std::vector<size_type>& ja);
+
   /* move ctor */
   SparsityIaja(SparsityIaja&& rhs);
   /* move assign */
@@ -33,12 +46,17 @@ class SparsityIaja {
   friend std::ostream& operator<<(std::ostream& os, const SparsityIaja& sp_pat);
   std::ostream& print_compressed(std::ostream& os);
 
-  /* matrix dimension */
+  /* Dimension */
   size_type nrow() const { return nr; }
   size_type ncol() const { return nc; }
   size_type nnonzero() const { return nnz; }
+  void compress_storage();
+  
 
  protected:
+  SparsityIaja(size_type nr, size_type nc, size_type nnz):
+      nr(nr), nc(nc), nnz(nnz), ia(nr+1), ja(nnz) {}
+
   size_type nr;
   size_type nc;
   size_type nnz;
@@ -52,6 +70,7 @@ class SparseMatrixIaja : public SparsityIaja {
 
   /* classes having direct access to sparsity structure */
   friend class SparseILU;
+  friend class ImgMatrixTest;
 
  public:
   using value_type      = T;
@@ -65,16 +84,31 @@ class SparseMatrixIaja : public SparsityIaja {
 
   /* ctor */
   SparseMatrixIaja() : SparsityIaja(), a() {}
+
   SparseMatrixIaja(size_type nr, size_type nc, size_type nnz,
           const size_type* ia, const size_type *ja);
+
   SparseMatrixIaja(size_type nr, size_type nc, size_type nnz,
           const size_type* ia, const size_type *ja, const T& a);
+
   SparseMatrixIaja(size_type nr, size_type nc, size_type nnz,
           const size_type* ia, const size_type *ja, const T* a);
+
   SparseMatrixIaja(size_type nc,
           const FullVector<size_type>& ia,
           const FullVector<size_type>& ja,
           const FullVector<T>& a);
+
+  SparseMatrixIaja(size_type nc,
+          FullVector<size_type>&& ia,
+          FullVector<size_type>&& ja,
+          FullVector<T>&& a);
+
+  SparseMatrixIaja(size_type nc,
+          const std::vector<size_type>& ia,
+          const std::vector<size_type>& ja,
+          const std::vector<T>& a);
+
   /* copy ctor */
   SparseMatrixIaja(const SparseMatrixIaja<T>& mat) = default;
   /* copy assign */
@@ -82,30 +116,34 @@ class SparseMatrixIaja : public SparsityIaja {
   /* move ctor */
   SparseMatrixIaja(SparseMatrixIaja<T>&& mat);
   /* move assign */
-  SparseMatrixIaja<T>& operator=(SparseMatrixIaja<T>&& mat);
+  SparseMatrixIaja<T>& operator= (SparseMatrixIaja<T>&& mat);
   /* dtor */
   virtual ~SparseMatrixIaja() = default;
 
   /* I/O */
   template <typename U>
   friend std::ostream& operator << (std::ostream& os, const SparseMatrixIaja<U>& mtrx);
+  std::ostream& print_compressed(std::ostream& os) const;
 
   /* Indexing */
   reference operator[](size_type i);
   const_reference operator[](size_type i) const;
 
-  FullVector<T> operator*(const FullVector<T> x) const;
-
-  // dimensions
+  /* Dimensions */
   size_type nrow() const { return nr; }
   size_type ncol() const { return nc; }
   size_type nnonzero() const { return nnz; }
+  void compress_storage();
 
+  /* Numerical Operations */
+  FullVector<T> operator*(const FullVector<T>& x) const;
   SparseMatrixIaja<T> transpose() const;
-  // void SparseMatrixIaja<T>::compress_storage();
-  std::ostream& print_compressed(std::ostream& os) const;
+  friend void FullVector<T>::multiply(const SparseMatrixIaja<T>& A, const FullVector<T>& x);
 
  protected:
+  SparseMatrixIaja(size_type nr, size_type nc, size_type nnz):
+      SparsityIaja(nr, nc, nnz), a(nnz) {}
+  
   FullVector<T> a;        // nonzero entries
 };
 

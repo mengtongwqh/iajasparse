@@ -14,15 +14,31 @@ IAJA_NAMESPACE_OPEN
 SparsityIaja::SparsityIaja():
     nr(0), nc(0), nnz(0), ia(), ja() {}
 
+SparsityIaja::SparsityIaja(size_type nr, size_type nc, size_type nnz, 
+        const size_type* ia, const size_type* ja):
+    nr(nr), nc(nc), nnz(nnz), ia(nr+1, ia), ja(nnz, ja) {}
+
 SparsityIaja::SparsityIaja(size_type nc,
-        const FullVector<size_type>& ia, const FullVector<size_type>& ja):
+        const FullVector<size_type>& ia,
+        const FullVector<size_type>& ja):
      nr(ia.length()-1), nc(nc), nnz(ja.length()), ia(ia), ja(ja) {}
+
+SparsityIaja::SparsityIaja(size_type nc,
+        FullVector<size_type>&& ia,
+        FullVector<size_type>&& ja):
+    nr(ia.length()-1), nc(nc), nnz(ja.length()),
+    ia(std::move(ia)), ja(std::move(ja)) {}
 
 SparsityIaja::SparsityIaja(SparsityIaja&& rhs):
     nr(rhs.nr), nc(rhs.nc), nnz(rhs.nnz),
     ia(std::move(rhs.ia)), ja(std::move(rhs.ja)) {
     rhs.nr = rhs.nc = rhs.nnz = 0;
 }
+
+SparsityIaja::SparsityIaja(size_type nc,
+        const std::vector<size_type>& ia,
+        const std::vector<size_type>& ja):
+    nr(ia.size()-1), nc(nc), nnz(ja.size()), ia(ia), ja(ja) {}
 
 SparsityIaja& SparsityIaja:: operator= (SparsityIaja&& rhs) {
     if ( this != &rhs ) {
@@ -58,5 +74,20 @@ std::ostream& operator<<(std::ostream& os, const SparsityIaja& sp) {
 
     return os;
 }
+
+
+/* -------------- *
+ *   Dimensions   *
+ * -------------- */
+void SparsityIaja::compress_storage() {
+    ia.remove_trailing_zeros();
+    nr = ia.length() - 1;
+    size_type true_leng = *(ia.cend()-1);
+    if ( nnz > true_leng ) {
+        nnz = true_leng;
+        ja.resize(true_leng);
+    }
+}
+
 
 IAJA_NAMESPACE_CLOSE

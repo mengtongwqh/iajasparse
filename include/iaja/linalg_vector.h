@@ -26,10 +26,11 @@ class FullVector {
 
   /* ctor */
   FullVector() : n(0), a(nullptr) {}
-  explicit FullVector(size_type n) : n(n), a(new T[n]()) {}
-  explicit FullVector(const std::vector<T>& rhs);
+  explicit FullVector(size_type n) : n(n), a(new T[n]) {}
   FullVector(size_type n, const T& a);
   FullVector(size_type n, const T* a);
+  explicit FullVector(const std::vector<T>& rhs);
+  FullVector(size_type n, T* && a);
   /* copy ctor */
   FullVector(const FullVector<T>& v);
   /* copy assign */
@@ -41,16 +42,16 @@ class FullVector {
   /* dtor */
   virtual ~FullVector();
 
-  /* iterator */
+  /* Iterator */
   iterator begin() { return a; }
-  iterator end() { return (a+n); }
+  iterator end() { return a+n; }
   const_iterator cbegin() const { return a; }
-  const_iterator cend() const { return (a+n);  }
+  const_iterator cend() const { return a+n; }
 
-  /* conversion operator */
-  operator T*() { return a; } // collapse to pointer to array
+  /* Conversion Operator */
+  explicit operator T*() { return a; } // collapse to pointer to array
 
-  /* indexing */
+  /* Indexing */
   reference operator[] (size_type i);
   const_reference operator[] (size_type i) const;
   reference operator[] (long int i);
@@ -62,20 +63,29 @@ class FullVector {
   template <typename U>
   friend std::ostream& operator<< (std::ostream& os, const FullVector<U>& x);
 
-  /* size & dimension */
+  /* Size & Dimension */
   size_type length() const {return n;}
+  void resize(size_t new_leng);
+  void remove_trailing_zeros();
 
-  /* numerical operation */
-  void cumsum();
+  /* Numerical Operation */
+  // results returned as objects
   value_type norm_l2() const;
-  T  operator* (const FullVector<T>& x) const; // dot product
-  FullVector<T>& operator*=(const T& s); // scalar multiply
+  value_type operator * (const FullVector<T>& x) const; // dot product
+
+  FullVector<T>   operator + (const FullVector<T>& other) const;
+  FullVector<T>&& operator + (FullVector<T>&& other) const;
+
+  FullVector<T>  operator - (const FullVector<T>& other) const; // vector add
+  FullVector<T>& operator*= (const T& s); // scalar multiply
+
   // inplace operations
-  void saxpy(T alpha, const FullVector<T>& x, const FullVector<T>& y);
+  void cumsum();
   void add(const FullVector<T>& b, const FullVector<T>& c);
   void minus(const FullVector<T>& b, const FullVector<T>& c);
   void multiply(const SparseMatrixIaja<T>& A, const FullVector<T>& x);
   void multiply(const T& s);
+  void saxpy(T alpha, const FullVector<T>& x, const FullVector<T>& y);
 
  protected:
   size_type n;
@@ -101,6 +111,9 @@ class SparseVector {
   SparseVector(size_type n, size_type nnz, const size_type* ja);
   SparseVector(size_type n, size_type nnz, const size_type* ja, const T& val);
   SparseVector(size_type n, size_type nnz, const size_type* ja, const T* a);
+  SparseVector(size_type n, const FullVector<size_type>& ja, const FullVector<T>& a);
+  SparseVector(size_type n, FullVector<size_type>&& ja, FullVector<T>&& a);
+  SparseVector(size_type n, const std::vector<size_type>& ja, const std::vector<T>& a);
   /* copy ctor */
   SparseVector(const SparseVector<T>& rhs) = default;
   /* copy assign */
@@ -132,6 +145,8 @@ class SparseVector {
   size_type nnonzero() const { return nnz; }
 
  protected:
+  SparseVector(size_type n, size_type nnz): n(n), nnz(nnz), ja(nnz), a(nnz) {};
+
   size_type n;
   size_type nnz;
   FullVector<size_type> ja;
