@@ -10,56 +10,72 @@
 
 IAJA_NAMESPACE_OPEN
 
-class SparseILURow : public SparseVector<double> {
+class IncompleteFactor {
 
-  friend class SparseILU;
-
- public:
-  // size_type is inherited from SparseVector
-  using size_type = SparseVector<double>::size_type;
-
-  // ctors and dtors
-  SparseILURow():SparseVector(), level_of_fill() {}
-  SparseILURow(size_t n, size_t nnz)
-      : SparseVector<double>(n, nnz), level_of_fill(nnz), diag(0) {}
-  SparseILURow(const SparseILURow& rhs);
-  SparseILURow(SparseILURow&& rhs);
-  virtual ~SparseILURow() = default;
-
-  // interfaces
-  SparseVector<double>::size_type diagonal() {return diag;}
-
- protected:
-  FullVector<unsigned int> level_of_fill;
-  size_type diag;
-};
-
-
-class SparseILU {
+ /* ================================== *
+  * Abstract base class for all
+  * incomplete factorization procedures
+  * ================================== */
 
  public:
-  using size_type = SparseILURow::size_type;
-  /* constructors and destructors */
-  explicit SparseILU(SparseMatrixIaja<double>& mtrx);
-  SparseILU(SparseILU&& rhs);
-  virtual ~SparseILU() = default;
+  class SparseFactorRow : public SparseVector<FloatType> {
+   public:
+    // size_type is inherited from SparseVector
+    using size_type = SparseVector<FloatType>::size_type;
+    // -----------------------------
+    /* ctors */
+    SparseFactorRow() : SparseVector(), level_of_fill() {}
+    // SparseFactorRow(size_type n, size_type nnz):
+        // SparseVector<FloatType>(n, nnz), level_of_fill(nnz), diag(0) {}
+    SparseFactorRow(size_type n, FullVector<size_type>&& ja,
+            FullVector<unsigned int>&& lof);
+    /* copy ctor/assign */
+    SparseFactorRow(const SparseFactorRow& rhs) = default;
+    SparseFactorRow& operator= (const SparseFactorRow& rhs) = default;
+    /* move ctor/assign */
+    SparseFactorRow(SparseFactorRow&& rhs);
+    SparseFactorRow& operator= (SparseFactorRow&& rhs);
+    /* dtor */
+    virtual ~SparseFactorRow() = default;
+    // -----------------------------
+    /* attributes */
+    FullVector<unsigned int> level_of_fill;
+    size_type diag;
+  };
 
-  /* operator overloading */
-  friend std::ostream& operator<< (std::ostream& os, const SparseILU& ilu);
+ public:
+  using size_type = SparseFactorRow::size_type;
+  /* ctor */
+  IncompleteFactor(SparseMatrixIaja<FloatType>& mtrx,
+          const std::string& reorder_method);
+  /* copy ctor/assign */
+  IncompleteFactor(const IncompleteFactor& rhs) = delete;
+  IncompleteFactor& operator = (const IncompleteFactor& rhs) = delete;
+  /* move ctor/assign */
+  IncompleteFactor(IncompleteFactor&& rhs);
+  IncompleteFactor& operator = (IncompleteFactor&& rhs);
+  /* dtor */
+  ~IncompleteFactor() = default;
 
-  /* public methods */
+  /* Numerical Operations */
   void reorder(const std::string& reorder_method = "natural");
-  void analyse(const unsigned int max_level_of_fill);
-  void factor();
-  void solve(const FullVector<double>& b, FullVector<double>& x) const;
+  void analyse(const unsigned int max_Lof);
+  virtual void factor();
+  virtual void solve(const FullVector<FloatType>& b, FullVector<FloatType>& x) const;
+
+  /* I/O */
   void print_level_of_fill(std::ostream& os) const;
+  friend std::ostream& operator<< (std::ostream& os, const IncompleteFactor& ifac);
+
+  /* Type Conversion */
+  explicit operator SparseMatrixIaja<FloatType>() const;
 
  protected:
-  SparseMatrixIaja<double>& A;
-  size_type  n;
-  FullVector<size_type> order_new2old; // order[new_order] = old_order
-  FullVector<size_type> order_old2new; // invord[old_order] = new_order
-  std::vector<SparseILURow> rows;
+  SparseMatrixIaja<FloatType>& A;
+  size_type n;
+  FullVector<size_type> order_new2old;
+  FullVector<size_type> order_old2new;
+  std::vector<SparseFactorRow> rows;
 
  private:
   void merge_linked_list(const size_type rowid,
@@ -68,6 +84,58 @@ class SparseILU {
           std::vector<size_type>& row_linked_list,
           std::vector<unsigned int>& row_level_of_fill,
           size_type& nnzrow);
+};
+
+
+
+class SparseILU : public IncompleteFactor {
+
+ /* ================================== *
+  *  incomplete LU-factorization
+  * ================================== */
+
+ public:
+  using size_type = SparseFactorRow::size_type;
+
+  /* ctors */
+  SparseILU(SparseMatrixIaja<FloatType>& mtrx, const std::string& reorder_method);
+  /* copy ctor/assign */
+  SparseILU(const SparseILU& rhs) = delete;
+  SparseILU& operator = (const SparseILU&) = delete;
+  /* move ctor/assign */
+  SparseILU(SparseILU&& rhs);
+  SparseILU& operator = (SparseILU&& rhs);
+  /* dtor */
+  virtual ~SparseILU() = default;
+
+  /* Numeric Methods */
+  virtual void factor();
+  virtual void solve(const FullVector<FloatType>& b, FullVector<FloatType>& x) const;
+};
+
+
+
+class SparseIchol : public IncompleteFactor {
+
+ /* ================================== *
+  * incomplete Cholesky factorization
+  * ================================== */
+
+ public:
+  /* ctor */
+  SparseIchol(SparseMatrixIaja<FloatType>& mtrx, const std::string& reorder_method);
+  /* copy ctor/assign */
+  SparseIchol(const SparseIchol& rhs) = delete;
+  SparseIchol& operator = (const SparseIchol& rhs) = delete;
+  /* move ctor/assign */
+  SparseIchol(SparseIchol&& rhs);
+  SparseIchol& operator = (SparseIchol&& rhs);
+  /* dtor */
+  virtual ~SparseIchol() = default;
+
+  /* Numerical Operations */
+  virtual void factor();
+  virtual void solve(const FullVector<FloatType>& b, FullVector<FloatType>& x) const;
 };
 
 IAJA_NAMESPACE_CLOSE
