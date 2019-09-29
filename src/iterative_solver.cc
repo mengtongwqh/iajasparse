@@ -6,9 +6,9 @@
 IAJA_NAMESPACE_OPEN
 
 /* ============================================ *
- *            IterativeSolverILU                *
+ *              IterativeSolver                 *
  * ============================================ */
-void IterativeSolverILU::residual(
+void IterativeSolver::residual(
         const FullVector<double>& b, const FullVector<double>& x,
         FullVector<double>& res) {
     // res = b - A*x
@@ -16,15 +16,20 @@ void IterativeSolverILU::residual(
     res.minus(b, res); // res = b - res
 }
 
-void IterativeSolverILU::symbolic_factor(const std::string& reorder_method,
+
+/* ============================================ *
+ *           IterativeSolverIFactor             *
+ * ============================================ */
+
+void IterativeSolverIFactor::symbolic_factor(const std::string& reorder_method,
         unsigned int max_level_of_fill) {
     // call ILU reordering and analyse
-    ilu.reorder(reorder_method);
-    ilu.analyse(max_level_of_fill);
+    ifac->reorder(reorder_method);
+    ifac->analyse(max_level_of_fill);
 }
 
 
-void IterativeSolverILU::test_ilu_factorization(const std::string& reorder_method,
+void IterativeSolverIFactor::test_incomplete_factorization(const std::string& reorder_method,
         unsigned int max_level_of_fill, const FullVector<double>& rhs) {
 
     std::ofstream ofs("IterSolvertest_ILU.txt", std::ofstream::out);
@@ -35,15 +40,15 @@ void IterativeSolverILU::test_ilu_factorization(const std::string& reorder_metho
     ofs << rhs << std::endl;
 
     ofs << "computing reordering with method " << reorder_method << std::endl;
-    ilu.reorder(reorder_method);
+    ifac->reorder(reorder_method);
     ofs << "computing ILU with level " << max_level_of_fill << std::endl;
-    ilu.analyse(max_level_of_fill);
-    ilu.print_level_of_fill(ofs);
+    ifac->analyse(max_level_of_fill);
+    ifac->print_level_of_fill(ofs);
     ofs << "computing numerical factorization" << std::endl;
-    ilu.factor();
-    ofs << ilu << std::endl;
+    ifac->factor();
+    ofs << *ifac << std::endl;
     FullVector<double> x(A.nrow());
-    ilu.solve(rhs, x);
+    ifac->solve(rhs, x);
     ofs << x << std::endl;
 
     ofs.close();
@@ -52,6 +57,7 @@ void IterativeSolverILU::test_ilu_factorization(const std::string& reorder_metho
 /* ============================================ *
  *                PCG SOLVER                    *
  * ============================================ */
+
 int PCG::iterative_solve(const FullVector<double>& b, FullVector<double>& x) {
 /* ---------------------------------------
  * INPUT
@@ -64,7 +70,7 @@ int PCG::iterative_solve(const FullVector<double>& b, FullVector<double>& x) {
     assert(A.nrow() == A.ncol());
 
     // do numerical factorization
-    ilu.factor();
+    ifac->factor();
 
     // allocate temp vectors
     // r : residual vector
@@ -76,7 +82,7 @@ int PCG::iterative_solve(const FullVector<double>& b, FullVector<double>& x) {
 
     // init search and residual vector
     residual(b, x, r);
-    ilu.solve(r, rt);
+    ifac->solve(r, rt);
     p = rt;
 
     // init iteration parameters
@@ -87,6 +93,8 @@ int PCG::iterative_solve(const FullVector<double>& b, FullVector<double>& x) {
 
     // iteration loop
     while ( rnorm2 > tol*tol*bnorm2 && iter_count < max_iter ) {
+
+        std::cout << sqrt(rnorm2)/N << std::endl;
 
         ++iter_count;
 
@@ -105,7 +113,7 @@ int PCG::iterative_solve(const FullVector<double>& b, FullVector<double>& x) {
         }
 
         // solve for r-tilde
-        ilu.solve(r, rt);
+        ifac->solve(r, rt);
 
         // update r (dot) rt
         double r_dot_rt_new = r*rt;
@@ -136,7 +144,7 @@ int Orthomin::iterative_solve(const FullVector<double>& b, FullVector<double>& x
 
     assert(A.nrow() == A.ncol());
 
-    ilu.factor();
+    ifac->factor();
     const unsigned int N = A.nrow();
 
     // allocate temp vectors
@@ -153,7 +161,9 @@ int Orthomin::iterative_solve(const FullVector<double>& b, FullVector<double>& x
 
     while ( rnorm2 > bnorm2*tol*tol && iter_count < max_iter ) {
 
-        ilu.solve(r, rt);
+        std::cout << sqrt(rnorm2)/N << std::endl;
+
+        ifac->solve(r, rt);
 
         p = rt;
         Ap.multiply(A, p);
