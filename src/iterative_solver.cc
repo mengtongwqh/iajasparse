@@ -21,38 +21,15 @@ void IterativeSolver::residual(
  *           IterativeSolverIFactor             *
  * ============================================ */
 
-void IterativeSolverIFactor::symbolic_factor(const std::string& reorder_method,
+void IterativeSolverIFactor::symbolic_factor(
+        const std::string& reorder_method,
         unsigned int max_level_of_fill) {
     // call ILU reordering and analyse
-    ifac->reorder(reorder_method);
+    // ifac->reorder(reorder_method);
+    assert(ifac != nullptr);
     ifac->analyse(max_level_of_fill);
 }
 
-
-void IterativeSolverIFactor::test_incomplete_factorization(const std::string& reorder_method,
-        unsigned int max_level_of_fill, const FullVector<double>& rhs) {
-
-    std::ofstream ofs("IterSolvertest_ILU.txt", std::ofstream::out);
-
-    ofs << "original matrix is:" << std::endl;
-    ofs << A << std::endl;
-    ofs << "RHS is:" << std::endl;
-    ofs << rhs << std::endl;
-
-    ofs << "computing reordering with method " << reorder_method << std::endl;
-    ifac->reorder(reorder_method);
-    ofs << "computing ILU with level " << max_level_of_fill << std::endl;
-    ifac->analyse(max_level_of_fill);
-    ifac->print_level_of_fill(ofs);
-    ofs << "computing numerical factorization" << std::endl;
-    ifac->factor();
-    ofs << *ifac << std::endl;
-    FullVector<double> x(A.nrow());
-    ifac->solve(rhs, x);
-    ofs << x << std::endl;
-
-    ofs.close();
-}
 
 /* ============================================ *
  *                PCG SOLVER                    *
@@ -70,7 +47,7 @@ int PCG::iterative_solve(const FullVector<double>& b, FullVector<double>& x) {
     assert(A.nrow() == A.ncol());
 
     // do numerical factorization
-    ifac->factor();
+    if (ifac) ifac->factor();
 
     // allocate temp vectors
     // r : residual vector
@@ -82,7 +59,12 @@ int PCG::iterative_solve(const FullVector<double>& b, FullVector<double>& x) {
 
     // init search and residual vector
     residual(b, x, r);
-    ifac->solve(r, rt);
+
+    if (ifac)
+        ifac->solve(r, rt);
+    else
+        rt = r;
+
     p = rt;
 
     // init iteration parameters
@@ -113,7 +95,10 @@ int PCG::iterative_solve(const FullVector<double>& b, FullVector<double>& x) {
         }
 
         // solve for r-tilde
-        ifac->solve(r, rt);
+        if (ifac)
+            ifac->solve(r, rt);
+        else
+            rt = r;
 
         // update r (dot) rt
         double r_dot_rt_new = r*rt;
@@ -144,7 +129,8 @@ int Orthomin::iterative_solve(const FullVector<double>& b, FullVector<double>& x
 
     assert(A.nrow() == A.ncol());
 
-    ifac->factor();
+    if (ifac) ifac->factor();
+
     const unsigned int N = A.nrow();
 
     // allocate temp vectors
@@ -163,7 +149,10 @@ int Orthomin::iterative_solve(const FullVector<double>& b, FullVector<double>& x
 
         std::cout << sqrt(rnorm2)/N << std::endl;
 
-        ifac->solve(r, rt);
+        if (ifac)
+            ifac->solve(r, rt);
+        else
+            rt = r;
 
         p = rt;
         Ap.multiply(A, p);

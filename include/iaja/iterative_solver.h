@@ -10,25 +10,26 @@ IAJA_NAMESPACE_OPEN
 class IterativeSolver {
  public:
   /* ctor */
-  IterativeSolver(SparseMatrixIaja<FloatType>& A,
-          unsigned int max_iter = 10000,
+  IterativeSolver(const SparseMatrixIaja<FloatType>& A,
+          unsigned int max_iter = 1000,
           FloatType tol = 1.0e-6):
-      A(A), max_iter(max_iter), tol(tol),
-      iter_count(0), residual_norm(0.0) {};
+      A(A), max_iter(max_iter), iter_count(0),
+      tol(tol), residual_norm(0.0) {}
+
   /* dtor */
-  ~IterativeSolver() = default;
-    
+  virtual ~IterativeSolver() = default;
+
   /* solver state accessor */
   unsigned int get_iter_count() { return iter_count; }
   double get_residual_norm() { return residual_norm; }
-  virtual int iterative_solve(const FullVector<FloatType>& b, FullVector<FloatType>& x);
+  virtual int iterative_solve(const FullVector<FloatType>& b, FullVector<FloatType>& x) = 0;
 
  protected:
   void residual(const FullVector<double>& b,
           const FullVector<double>& x,
           FullVector<double>& res);
 
-  SparseMatrixIaja<FloatType>& A;
+  const SparseMatrixIaja<FloatType>& A;
   unsigned int max_iter;
   unsigned int iter_count;
   FloatType tol;
@@ -41,23 +42,24 @@ class IterativeSolverIFactor : public IterativeSolver {
  public:
   /* ctor */
   IterativeSolverIFactor(IncompleteFactor* ifac,
-          unsigned int max_iter = 10000,
+          unsigned int max_iter = 1000,
+          double tol = 1.0e-6): 
+      IterativeSolver(ifac->get_A(), max_iter, tol), ifac(ifac) {}
+
+  IterativeSolverIFactor(const SparseMatrixIaja<FloatType>& A,
+          unsigned int max_iter = 1000,
           double tol = 1.0e-6):
-    IterativeSolver(ifac->A, max_iter, tol), ifac(ifac) {}
+      IterativeSolver(A, max_iter, tol), ifac(nullptr) {}
+      
   /* dtor */
   virtual ~IterativeSolverIFactor() = default;
 
   /* accessor */
-  const SparseILU& get_ilu() const { return *ilu; }
+  const IncompleteFactor& get_ilu() const { return *ifac; }
 
   /* numerical operations */
   virtual void symbolic_factor(const std::string& reorder_method = "natural",
           unsigned int max_level_of_fill = 1);
-
-  void test_incomplete_factorization(
-          const std::string& reorder_method,
-          unsigned int max_level_of_fill,
-          const FullVector<double>& rhs);
 
  protected:
   IncompleteFactor* ifac;
@@ -73,15 +75,22 @@ class PCG : public IterativeSolverIFactor {
  public:
   /* ctor and dtor */
   PCG(IncompleteFactor* ifac,
-          unsigned int max_iter = 10000, double tol = 1e-6)
-    : IterativeSolverIFactor(ifac, max_iter, tol) {}
+          unsigned int max_iter = 1000,
+          double tol = 1.0e-6):
+      IterativeSolverIFactor(ifac, max_iter, tol) {}
+
+  PCG(const SparseMatrixIaja<FloatType>& A,
+          unsigned int max_iter = 1000,
+          double tol = 1.0e-6):
+      IterativeSolverIFactor(A, max_iter, tol) {}
+
   virtual ~PCG() = default;
 
   /* methods */
-  int iterative_solve(const FullVector<double>& b, FullVector<double>& soln);
+  virtual int iterative_solve(const FullVector<double>& b, FullVector<double>& soln);
 
  private:
-  const unsigned int interval_residual_recompute = 5;
+  const unsigned int interval_residual_recompute = 50;
 };
 
 
@@ -91,14 +100,24 @@ class PCG : public IterativeSolverIFactor {
 class Orthomin : public IterativeSolverIFactor {
 
  public:
-  /* ctor and dtor */
-  Orthomin(IncompleteFactor* ifac, unsigned int k_orth = 5,
-          unsigned int max_iter = 10000, double tol = 1e-6)
-    : IterativeSolverIFactor(ifac, max_iter, tol), k_orth(k_orth) {}
+  /* ctor */
+  Orthomin(IncompleteFactor* ifac,
+          unsigned int k_orth = 5,
+          unsigned int max_iter = 1000,
+          double tol = 1.0e-6):
+      IterativeSolverIFactor(ifac, max_iter, tol), k_orth(k_orth) {}
+
+  Orthomin(const SparseMatrixIaja<FloatType>& A,
+          unsigned int k_orth = 5,
+          unsigned int max_iter = 1000,
+          double tol = 1.0e-6):
+      IterativeSolverIFactor(A, max_iter, tol), k_orth(k_orth) {}
+
+  /* dtor */
   virtual ~Orthomin() = default;
 
   /* methods */
-  int iterative_solve(const FullVector<double>& b, FullVector<double>& soln);
+  virtual int iterative_solve(const FullVector<double>& b, FullVector<double>& soln);
 
  private:
   const unsigned int k_orth;
