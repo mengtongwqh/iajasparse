@@ -8,8 +8,6 @@
 #include <iostream>
 #include <utility>
 
-#define SHOW_CALLED_FCN
-
 IAJA_NAMESPACE_OPEN
 
 /* ============================================ *
@@ -38,10 +36,10 @@ FullVector<T>::FullVector(size_type n, const T* arr):
 
 template <typename T> inline
 FullVector<T>::FullVector(size_type n, T* && arr):
-    n(n), a(arr) { 
+    n(n), a(arr) {
     arr = nullptr;
 
-#ifdef SHOW_CALLED_FCN
+#ifdef SHOW_MOVE_COPY
     std::cout << "FullVector rvalue ref constructor called\n";
 #endif
 }
@@ -53,7 +51,7 @@ FullVector<T>::FullVector(const std::vector<T>& rhs):
     for (auto i = rhs.cbegin(); i != rhs.cend(); ++i) {
         a[ctr++] = *i;
     }
-#ifdef SHOW_CALLED_FCN
+#ifdef SHOW_MOVE_COPY
     std::cout << "FullVector std::vector constructor called\n";
 #endif
 }
@@ -62,7 +60,7 @@ template <typename T>
 FullVector<T>::FullVector(const FullVector<T>& v)
     : n(v.n), a(new T[n]) {
     for (size_type i = 0; i < n; ++i) a[i] = v[i];
-#ifdef SHOW_CALLED_FCN
+#ifdef SHOW_MOVE_COPY
     std::cout << "FullVector copy constructor called\n";
 #endif
 }
@@ -71,7 +69,7 @@ template <typename T>
 FullVector<T>::FullVector(FullVector<T>&& v)
     : n(v.n), a(v.a) {
     v.n = 0; v.a = nullptr;
-#ifdef SHOW_CALLED_FCN
+#ifdef SHOW_MOVE_COPY
     std::cout << "FullVector move constructor called\n";
 #endif
 }
@@ -85,14 +83,14 @@ template <typename T>
 FullVector<T>& FullVector<T>:: operator= (const FullVector<T>& rhs) {
     if (this != &rhs) {
         if (n != rhs.n) {
-            if (n != 0) delete[] a;
+            delete[] a; // delete nullptr is safe
             a = new T[rhs.n];
         }
         n = rhs.n;
         for (size_type i = 0; i < n; ++i) a[i] = rhs[i];
     }
 
-#ifdef SHOW_CALLED_FCN
+#ifdef SHOW_MOVE_COPY
     std::cout << "FullVector copy assign called\n";
 #endif
     return *this;
@@ -101,12 +99,12 @@ FullVector<T>& FullVector<T>:: operator= (const FullVector<T>& rhs) {
 template <typename T>
 FullVector<T>& FullVector<T>:: operator= (FullVector<T>&& rhs) {
     if (this != &rhs) {
-        if (n != 0) delete[] a;
+        delete[] a;
         a = rhs.a; n = rhs.n;
         rhs.a = nullptr; rhs.n = 0;
-    }    
+    }
 
-#ifdef SHOW_CALLED_FCN
+#ifdef SHOW_MOVE_COPY
     std::cout << "FullVector move assign called\n";
 #endif
     return *this;
@@ -163,8 +161,7 @@ template <typename T>
 void FullVector<T>::resize(size_t new_leng) {
     if (new_leng != n) {
         if (new_leng == 0) {
-            if (a != nullptr) delete[] a;
-            a = nullptr; n = 0;
+            delete[] a; a = nullptr; n = 0;
         }
         T* a_resz = new T[new_leng]();
         n = (new_leng > n) ? n : new_leng;
@@ -373,6 +370,10 @@ SparseVector<T>::SparseVector(size_type n,
     ja(std::move(ja)), a(std::move(a))
 { assert(ja.length() == a.length()); }
 
+template <typename T>
+SparseVector<T>::SparseVector(size_type n, FullVector<size_type>&& ja):
+    n(n), nnz(ja.length()), ja(std::move(ja)), a(nnz) {}
+
 
 template <typename T>
 SparseVector<T>::SparseVector(size_type n,
@@ -425,8 +426,7 @@ template <typename T>
 std::ostream& operator<<(std::ostream& os, const SparseVector<T>& vin) {
     for (decltype(vin.n) i = 0, j = 0; i < vin.n; ++i) {
         if (j < vin.nnz && i == vin.ja[j]) {
-            os << vin.a[j] << " ";
-            ++j;
+            os << vin.a[j++] << " ";
         } else {
             os << 0 << " ";
         }
