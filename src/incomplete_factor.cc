@@ -1,16 +1,14 @@
 #include <iaja/iaja_config.h>
-#include <iaja/ilu.h>
+#include <iaja/incomplete_factor.h>
 #include <iaja/util.h>
 
 #include <algorithm>
 #include <cassert>
 #include <iomanip>
 
-// #ifdef PROFILE_ALL
-    // #define PROFILING
-// #else
-    // #undef PROFILING
-// #endif
+#ifdef PROFILE_ALL
+    #define PROFILING
+#endif
 
 IAJA_NAMESPACE_OPEN
 
@@ -49,7 +47,7 @@ IncompleteFactor::SparseFactorRow:: operator= (
  *     Ctor, Dtor, Assign    *
  * ------------------------- */
 
-IncompleteFactor::IncompleteFactor(SparseMatrixIaja<FloatType>& mtrx,
+IncompleteFactor::IncompleteFactor(const SparseMatrixIaja<FloatType>& mtrx,
         const std::string& reorder_method)
     : A(mtrx), n(mtrx.nrow()),
     order_new2old(mtrx.nrow()),
@@ -66,16 +64,6 @@ IncompleteFactor::IncompleteFactor(IncompleteFactor&& rhs):
     order_new2old(std::move(rhs.order_new2old)),
     order_old2new(std::move(rhs.order_old2new)),
     rows(std::move(rows)) {}
-
-IncompleteFactor& IncompleteFactor:: operator = (IncompleteFactor&& rhs) {
-    if (this != &rhs) {
-        A = rhs.A; n = rhs.n;
-        order_new2old = std::move(rhs.order_new2old);
-        order_old2new = std::move(rhs.order_old2new);
-        rows = std::move(rhs.rows);
-    }
-    return *this;
-}
 
 
 /* ---------- *
@@ -95,7 +83,7 @@ void IncompleteFactor::print_level_of_fill(std::ostream& os) const {
     for (auto i = rows.cbegin(); i != rows.cend(); ++i) {
         for (size_type j = 0, jj = 0; j < n; ++j) {
             if ( jj < i->nnonzero() && i->get_ja(jj) == j ) {
-                os << std::setw(width) << std::right << i->level_of_fill[++jj];
+                os << std::setw(width) << std::right << i->level_of_fill[jj++];
             } else {
                 os <<std::setw(width) << std::right << " ";
             }
@@ -330,19 +318,12 @@ void IncompleteFactor::merge_linked_list(
 /* ------------------------- *
  *     Ctor, Dtor, Assign    *
  * ------------------------- */
-SparseILU::SparseILU(SparseMatrixIaja<FloatType>& mtrx,
+SparseILU::SparseILU(const SparseMatrixIaja<FloatType>& mtrx,
         const std::string& reorder_method) :
     IncompleteFactor(mtrx, reorder_method) {}
 
 SparseILU::SparseILU(SparseILU&& rhs):
     IncompleteFactor(std::move(rhs)) {}
-
-SparseILU& SparseILU:: operator = (SparseILU&& rhs) {
-    if (this != & rhs) {
-        IncompleteFactor:: operator = (std::move(rhs));
-    }
-    return *this;
-}
 
 
 /* ------------------------- *
@@ -458,27 +439,26 @@ void SparseILU::solve(const FullVector<FloatType>& b, FullVector<FloatType>& x) 
  *   Ctor, Dtor, Assign      *
  * ------------------------- */
 
-SparseIchol::SparseIchol(SparseMatrixIaja<FloatType>& mtrx,
+SparseIChol::SparseIChol(const SparseMatrixIaja<FloatType>& mtrx,
         const std::string& reorder_method):
     IncompleteFactor(mtrx, reorder_method) {}
 
-SparseIchol::SparseIchol(SparseIchol&& rhs):
+SparseIChol::SparseIChol(SparseIChol&& rhs):
     IncompleteFactor(std::move(rhs)) {}
-
-SparseIchol& SparseIchol:: operator = (SparseIchol&& rhs) {
-    if (this != &rhs)
-        IncompleteFactor:: operator = (std::move(rhs));
-    return *this;
-}
 
 /* ------------------------- *
  *   Numerical Operation     *
  * ------------------------- */
 
-void SparseIchol::factor() {
+void SparseIChol::factor() {
+
+#ifdef PROFILING
+    Timer timer;
+#endif
 
     FullVector<FloatType> row_temp(n, 0.0);
     FullVector<size_type> upper_offset(n);
+
     for (size_type i = 0; i < n; ++i)
         upper_offset[i] = rows[i].diag + 1;
 
@@ -488,7 +468,6 @@ void SparseIchol::factor() {
 
         // scatter the entries of ith row under new ordering
         for ( size_type j = A.get_ia(iold); j < A.get_ia(iold+1); ++j )
-            // TODO only load the lower-trig part?
             row_temp[ order_old2new[ A.get_ja(j) ] ] = A[j];
 
         // compute off-diagonal entries for this row
@@ -498,38 +477,58 @@ void SparseIchol::factor() {
 
             // off-diagonal entries
             for ( size_type k = 0; k < rows[idx_col].diag; ++k ) {
-                size_type idx_row = rows[j].get_ja(k);
-                row_temp[idx_col] -= row_temp[idx_row]*rows[idx_col][k];
+                size_type idx_row = rows[idx_col].get_ja(k);
+                row_temp[idx_col] -= row_temp[idx_row] * rows[idx_col][k];
             }
-            // TODO throw exception if zero diagonal
             assert(fabs(rows[idx_col][rows[idx_col].diag]) > FLOATING_POINT_NEARLY_ZERO);
             row_temp[idx_col] /= rows[idx_col][rows[idx_col].diag];
         }
 
         // compute diagonal entry for this row
-        double diag_entry = row_temp[rows[i].get_ja(rows[i].diag)];
-        for (size_type j = 0; j < rows[i].diag; ++j) diag_entry -= rows[i][j];
-        row_temp[rows[i].get_ja(rows[i].diag)] = sqrt(diag_entry);
+        FloatType diag_entry = row_temp[i];
+        for (size_type j = 0; j < rows[i].diag; ++j) {
+            size_type idx = rows[i].get_ja(j);
+            diag_entry -= row_temp[idx]*row_temp[idx];
+        }
+        assert(diag_entry > 0.0);
+        row_temp[i] = sqrt(diag_entry);
 
         // gather nonzero entries in row_temp into packed form
         for (size_type j = 0; j <= rows[i].diag; ++j) {
-            // set entries left of diagonal
-            FloatType  this_entry = row_temp[rows[i].get_ja(j)];
-            rows[i][j] = this_entry;
-            // mirror reflection w.r.t diagonal
+
+            // gather entries left of (including) diagonal
             size_type idx_row = rows[i].get_ja(j);
-            size_type idx_col = upper_offset[idx_row]++;
-            rows[idx_row][idx_col] = this_entry;
+            FloatType this_entry = row_temp[idx_row];
+            row_temp[idx_row] = 0;
+
+            rows[i][j] = this_entry;
+
+            if ( j < rows[i].diag ) {
+                // mirror reflection w.r.t the diagonal
+                size_type idx_col = upper_offset[idx_row]++;
+                rows[idx_row][idx_col] = this_entry;
+            }
         }
 
-        // reset row_temp to zero;
-        for ( size_type j= A.get_ia(iold); j< A.get_ia(iold+1); ++j )
-            row_temp[A.get_ja(j)] = 0.0;
+        // set row_temp to zero for entries right of diagonal
+        for ( size_type j = rows[i].diag+1; j < rows[i].nnonzero(); ++j ) {
+            row_temp[rows[i].get_ja(j)] = 0.0;
+        }
     } // i(row)-loop
+
+#ifdef DEBUG
+    for (size_type i = 0; i < n; ++i) 
+        assert(upper_offset[i] == rows[i].nnonzero());
+#endif
+
+#ifdef PROFILING
+    std::cout << "Timing for IChol numeric factorization (factor): " <<
+        std::scientific << timer.elapsed() << "\n";
+#endif
 }
 
 
-void SparseIchol::solve(const FullVector<FloatType>& b,
+void SparseIChol::solve(const FullVector<FloatType>& b,
         FullVector<FloatType>& x) const {
 
     assert(x.length() == n && b.length() == n);

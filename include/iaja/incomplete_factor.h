@@ -22,22 +22,26 @@ class IncompleteFactor {
    public:
     // size_type is inherited from SparseVector
     using size_type = SparseVector<FloatType>::size_type;
+
     // -----------------------------
     /* ctors */
     SparseFactorRow() : SparseVector(), level_of_fill() {}
-    // SparseFactorRow(size_type n, size_type nnz):
-        // SparseVector<FloatType>(n, nnz), level_of_fill(nnz), diag(0) {}
+
     SparseFactorRow(size_type n, FullVector<size_type>&& ja,
             FullVector<unsigned int>&& lof);
+
     /* copy ctor/assign */
     SparseFactorRow(const SparseFactorRow& rhs) = default;
     SparseFactorRow& operator= (const SparseFactorRow& rhs) = default;
+
     /* move ctor/assign */
     SparseFactorRow(SparseFactorRow&& rhs);
     SparseFactorRow& operator= (SparseFactorRow&& rhs);
+
     /* dtor */
-    virtual ~SparseFactorRow() = default;
+    ~SparseFactorRow() = default;
     // -----------------------------
+
     /* attributes */
     FullVector<unsigned int> level_of_fill;
     size_type diag;
@@ -46,35 +50,47 @@ class IncompleteFactor {
  public:
   using size_type = SparseFactorRow::size_type;
   /* ctor */
-  IncompleteFactor(SparseMatrixIaja<FloatType>& mtrx,
+  IncompleteFactor(const SparseMatrixIaja<FloatType>& mtrx,
           const std::string& reorder_method);
+
   /* copy ctor/assign */
   IncompleteFactor(const IncompleteFactor& rhs) = delete;
   IncompleteFactor& operator = (const IncompleteFactor& rhs) = delete;
+
   /* move ctor/assign */
   IncompleteFactor(IncompleteFactor&& rhs);
-  IncompleteFactor& operator = (IncompleteFactor&& rhs);
+  IncompleteFactor& operator = (IncompleteFactor&& rhs) = delete;
+
   /* dtor */
-  ~IncompleteFactor() = default;
+  virtual ~IncompleteFactor() = default;
 
   /* Numerical Operations */
-  void reorder(const std::string& reorder_method = "natural");
+  void reorder(const std::string& reorder_method);
+
   void analyse(const unsigned int max_Lof);
-  virtual void factor();
-  virtual void solve(const FullVector<FloatType>& b, FullVector<FloatType>& x) const;
+
+  virtual void factor() = 0;
+
+  virtual void solve(const FullVector<FloatType>& b, FullVector<FloatType>& x) const = 0;
 
   /* I/O */
   void print_level_of_fill(std::ostream& os) const;
+
   friend std::ostream& operator<< (std::ostream& os, const IncompleteFactor& ifac);
+
+  /* Accessor */
+  const SparseMatrixIaja<FloatType>& get_A() const {return A;}
 
   /* Type Conversion */
   explicit operator SparseMatrixIaja<FloatType>() const;
 
  protected:
-  SparseMatrixIaja<FloatType>& A;
+  const SparseMatrixIaja<FloatType>& A;
   size_type n;
+
   FullVector<size_type> order_new2old;
   FullVector<size_type> order_old2new;
+
   std::vector<SparseFactorRow> rows;
 
  private:
@@ -98,24 +114,29 @@ class SparseILU : public IncompleteFactor {
   using size_type = SparseFactorRow::size_type;
 
   /* ctors */
-  SparseILU(SparseMatrixIaja<FloatType>& mtrx, const std::string& reorder_method);
+  SparseILU(const SparseMatrixIaja<FloatType>& mtrx,
+          const std::string& reorder_method = "natural");
+
   /* copy ctor/assign */
   SparseILU(const SparseILU& rhs) = delete;
   SparseILU& operator = (const SparseILU&) = delete;
+
   /* move ctor/assign */
   SparseILU(SparseILU&& rhs);
-  SparseILU& operator = (SparseILU&& rhs);
+  SparseILU& operator = (SparseILU&& rhs) = delete;
+
   /* dtor */
   virtual ~SparseILU() = default;
 
   /* Numeric Methods */
   virtual void factor();
+
   virtual void solve(const FullVector<FloatType>& b, FullVector<FloatType>& x) const;
 };
 
 
 
-class SparseIchol : public IncompleteFactor {
+class SparseIChol : public IncompleteFactor {
 
  /* ================================== *
   * incomplete Cholesky factorization
@@ -123,18 +144,23 @@ class SparseIchol : public IncompleteFactor {
 
  public:
   /* ctor */
-  SparseIchol(SparseMatrixIaja<FloatType>& mtrx, const std::string& reorder_method);
+  SparseIChol(const SparseMatrixIaja<FloatType>& mtrx,
+          const std::string& reorder_method = "natural");
+
   /* copy ctor/assign */
-  SparseIchol(const SparseIchol& rhs) = delete;
-  SparseIchol& operator = (const SparseIchol& rhs) = delete;
+  SparseIChol(const SparseIChol& rhs) = delete;
+  SparseIChol& operator = (const SparseIChol& rhs) = delete;
+
   /* move ctor/assign */
-  SparseIchol(SparseIchol&& rhs);
-  SparseIchol& operator = (SparseIchol&& rhs);
+  SparseIChol(SparseIChol&& rhs);
+  SparseIChol& operator = (SparseIChol&& rhs) = delete;
+
   /* dtor */
-  virtual ~SparseIchol() = default;
+  virtual ~SparseIChol() = default;
 
   /* Numerical Operations */
   virtual void factor();
+
   virtual void solve(const FullVector<FloatType>& b, FullVector<FloatType>& x) const;
 };
 
