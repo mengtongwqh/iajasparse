@@ -1,15 +1,16 @@
-#ifndef _IMG_MATRIX_H_
-#define _IMG_MATRIX_H_
+#ifndef _TESTS_H_
+#define _TESTS_H_
 
 #include <iaja/iaja_config.h>
 #include <iaja/linalg_vector.h>
 #include <iaja/linalg_matrix.h>
-#include <iaja/ilu.h>
+#include <iaja/incomplete_factor.h>
 #include <iaja/iterative_solver.h>
 
 #include <string>
 
 IAJA_NAMESPACE_OPEN
+
 /* ==================================================== *
  *            IMAGE DENOISING TEST PROBLEM              *
  * ==================================================== */
@@ -17,16 +18,21 @@ IAJA_NAMESPACE_OPEN
 // -------------------------------------
 // Image matrix test base class
 // -------------------------------------
-class ImgMatrixTest  {
+class ImgDenoiseTest  {
  public:
   using size_type = SizeType;
-  explicit ImgMatrixTest(size_type N);
-  virtual ~ImgMatrixTest() = default;
+
+  explicit ImgDenoiseTest(size_type N);
+  virtual ~ImgDenoiseTest() = default;
 
   void img_lhs();
   void img_rhs();
   void set_diag_dominant_Mmatrix();
 
+  const SparseMatrixIaja<FloatType>& get_lhs() {return lhs;}
+  const FullVector<FloatType>& get_rhs() {return rhs;}
+
+ protected:
   // parameters
   size_type n;
   size_type N;
@@ -34,58 +40,37 @@ class ImgMatrixTest  {
   // matrix structure
   SparseMatrixIaja<FloatType> lhs;
   FullVector<FloatType> rhs;
+
+ public:
   FullVector<FloatType> x;
 
  protected:
   double alpha;
 };
 
-// -------------------------------------
-// Image matrix test w. PCG
-// -------------------------------------
-class ImgMatrixPCG : public ImgMatrixTest {
-
- public:
-  ImgMatrixPCG(size_type N, unsigned int max_iter, double tol)
-      : ImgMatrixTest(N), solver(lhs, max_iter, tol) {}
-  virtual ~ImgMatrixPCG() = default;
-  void test_ilu_procedures(unsigned int max_level_of_fill, const std::string& reorder_method);
-
-  PCG solver;
-};
-
-// -------------------------------------
-// Image matrix test w. Orthomin
-// -------------------------------------
-class ImgMatrixOrthomin : public ImgMatrixTest {
- public:
-  ImgMatrixOrthomin(size_type N, unsigned int k_orth,
-          unsigned int max_iter, double tol):
-      ImgMatrixTest(N), solver(lhs, k_orth, max_iter, tol) {}
-  virtual ~ImgMatrixOrthomin() = default;
-
-  Orthomin solver;
-};
-/* ==================================================== */
 
 
 /* ==================================================== *
  *           3D FINITE DIFFERENCE GRID TEST             *
  * ==================================================== */
-class FDGrid {
+class EllipticalFDTest {
 
  public:
   using size_type = SizeType;
+
   /* Ctor */
-  explicit FDGrid(size_type n_dim, const std::string& method = "ascend");
+  explicit EllipticalFDTest(size_type n_dim, const std::string& method = "ascend");
+
   /* Copy Ctor/Assign */
-  FDGrid(const FDGrid& rhs) = delete;
-  FDGrid& operator = (const FDGrid& rhs) = delete;
+  EllipticalFDTest(const EllipticalFDTest& rhs) = delete;
+  EllipticalFDTest& operator = (const EllipticalFDTest& rhs) = delete;
+
   /* Move Ctor/Assign */
-  FDGrid(FDGrid&& rhs) = delete;
-  FDGrid& operator = (FDGrid&& rhs) = delete;
+  EllipticalFDTest(EllipticalFDTest&& rhs) = delete;
+  EllipticalFDTest& operator = (EllipticalFDTest&& rhs) = delete;
+
   /* Dtor */
-  ~FDGrid() = default;
+  ~EllipticalFDTest() = default;
 
   /* getters */
   const SparseMatrixIaja<FloatType>& get_lhs() const {return lhs;}
@@ -94,37 +79,17 @@ class FDGrid {
  protected:
   size_type nx, ny, nz, n;
   FullVector<FloatType> rhs;
-  FullVector<FloatType> x;
   SparseMatrixIaja<FloatType> lhs;
   FullVector<SizeType> idiag;
+
+ public:
+  FullVector<FloatType> x;
 
  private:
   void build_sparsity(FullVector<SizeType>& ia, FullVector<SizeType>& ja);
   void set_ascend();
   void set_anisotropic_K();
 };
-
-class FDGridPCG : public FDGrid, public PCG {
- public:
-  FDGridPCG(size_type n_dim, const std::string& method = "ascend",
-          unsigned int max_iter = 1000, double tol = 1e-6):
-      FDGrid(n_dim, method), PCG(lhs, max_iter, tol) {}
-  ~FDGridPCG() = default;
-
-  int iterative_solve() { return PCG::iterative_solve(rhs, x); }
-};
-
-
-class FDGridOrthomin : public FDGrid, public Orthomin {
- public:
-  FDGridOrthomin(size_type n_dim, const std::string& method = "ascend",
-          unsigned int k_orth = 5, unsigned int max_iter = 1000, double tol = 1e-6):
-      FDGrid(n_dim, method), Orthomin(lhs, k_orth, max_iter, tol) {}
-  ~FDGridOrthomin() = default;
-
-  int iterative_solve() { return Orthomin::iterative_solve(rhs, x); }
-};
-
 
 /* ==================================================== */
 IAJA_NAMESPACE_CLOSE

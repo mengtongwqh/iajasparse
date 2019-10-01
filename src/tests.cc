@@ -7,8 +7,8 @@ IAJA_NAMESPACE_OPEN
  *            IMAGE DENOISING TEST PROBLEM              *
  * ==================================================== */
 
-ImgMatrixTest::ImgMatrixTest(size_type N_dim)
-    : n(N_dim), N(n*n), lhs(N, N, 5*N), rhs(N), x(N) {
+ImgDenoiseTest::ImgDenoiseTest(size_type N_dim)
+    : n(N_dim), N(n*n), lhs(), rhs(N), x(N, 0.0) {
     alpha =
         (n == 16) ? 4e-2 :
         (n == 32) ? 3e-2 :
@@ -17,11 +17,16 @@ ImgMatrixTest::ImgMatrixTest(size_type N_dim)
 }
 
 
-void ImgMatrixTest::img_lhs() {
+void ImgDenoiseTest::img_lhs() {
 
     double h = 1.0 / (n+1);
     double beta = 1e-6;
-    lhs.ia[0] = 0;
+
+    FullVector<SizeType>  lhs_ia(N+1, static_cast<SizeType>(0));
+    FullVector<SizeType>  lhs_ja(5*N, static_cast<SizeType>(0));
+    FullVector<FloatType> lhs_a(5*N, 0.0);
+
+    lhs_ia[0] = 0;
     size_type k = 0;
 
     for ( size_type j = 0; j < n; ++j ) {
@@ -38,7 +43,7 @@ void ImgMatrixTest::img_lhs() {
                 a2 = (x[I]-x[I-n])*(x[I]-x[I-n]);
                 if ( i < n-1 ) a2 += (x[I+1-n]-x[I-n])*(x[I+1-n]-x[I-n]);
                 a2 = 1.0/(2*h*sqrt(a2+h*h*beta));
-                lhs.ja[k] = I-n; lhs.a[k] = -alpha*(a1+a2); k++;
+                lhs_ja[k] = I-n; lhs_a[k] = -alpha*(a1+a2); k++;
             }
 
             /* left */
@@ -49,11 +54,11 @@ void ImgMatrixTest::img_lhs() {
                 a6 = (x[I]-x[I-1])*(x[I]-x[I-1]);
                 if ( j < n-1 ) a6 += (x[I+n-1]-x[I-1])*(x[I+n-1]-x[I-1]);
                 a6 = 1.0/(2*h*sqrt(a6+h*h*beta));
-                lhs.ja[k] = I-1; lhs.a[k] = -alpha*(a1+a6); k++;
+                lhs_ja[k] = I-1; lhs_a[k] = -alpha*(a1+a6); k++;
             }
 
             /* center */
-            lhs.ja[k] = I; lhs.a[k] = 0.0; size_type kd = k; k++;
+            lhs_ja[k] = I; lhs_a[k] = 0.0; size_type kd = k; k++;
 
             /* right */
             if ( i < n-1 ) {
@@ -63,7 +68,7 @@ void ImgMatrixTest::img_lhs() {
                 a4 = (x[I+1]-x[I])*(x[I+1]-x[I]);
                 if ( j < n-1 ) a4 += (x[I+n]-x[I])*(x[I+n]-x[I]);
                 a4 = 1.0/(2*h*sqrt(a4+h*h*beta));
-                lhs.ja[k] = I+1; lhs.a[k] = -alpha*(a3+a4); k++;
+                lhs_ja[k] = I+1; lhs_a[k] = -alpha*(a3+a4); k++;
             }
 
             /* top */
@@ -74,24 +79,25 @@ void ImgMatrixTest::img_lhs() {
                 a5 = (x[I+n]-x[I])*(x[I+n]-x[I]);
                 if ( i > 0 ) a5 += (x[I+n]-x[I-1+n])*(x[I+n]-x[I-1+n]);
                 a5  = 1.0/(2*h*sqrt(a5+h*h*beta));
-                lhs.ja[k] = I+n; lhs.a[k] = -alpha*(a4+a5); k++;
+                lhs_ja[k] = I+n; lhs_a[k] = -alpha*(a4+a5); k++;
             }
 
-            for (size_type l = lhs.ia[I]; l < k; l++) {
+            for (size_type l = lhs_ia[I]; l < k; l++) {
                 if (l != kd) {
-                    lhs.a[kd] -= lhs.a[l];
+                    lhs_a[kd] -= lhs_a[l];
                 }
             }
-            lhs.a[kd] += 1.0;
-            lhs.ia[I+1] = k;
+            lhs_a[kd] += 1.0;
+            lhs_ia[I+1] = k;
         }
     }
 
+    lhs = SparseMatrixIaja<FloatType>(N, lhs_ia, lhs_ja, lhs_a);
     lhs.compress_storage();
 }
 
 
-void ImgMatrixTest::img_rhs() {
+void ImgDenoiseTest::img_rhs() {
 
     double h = 1.0/(n+1);
 
@@ -125,7 +131,7 @@ void ImgMatrixTest::img_rhs() {
 }
 
 
-void ImgMatrixTest::set_diag_dominant_Mmatrix() {
+void ImgDenoiseTest::set_diag_dominant_Mmatrix() {
 /* -------------------------------------------------------------------
  * recondition [a] into a diagonally dominant M-matrix
  * INPUT:
@@ -146,12 +152,12 @@ void ImgMatrixTest::set_diag_dominant_Mmatrix() {
         isave = -1;
         double temp = 0.0;
 
-        for (size_type ii = lhs.ia[i]; ii < lhs.ia[i+1]; ++ii) {
-            if ( lhs.ja[ii] == i ) {
+        for (size_type ii = lhs.get_ia(i); ii < lhs.get_ia(i+1); ++ii) {
+            if ( lhs.get_ja(ii) == i ) {
                 isave = ii;
             } else {
-                lhs.a[ii] = -1.0;
-                temp += lhs.a[ii];
+                lhs[ii] = -1.0;
+                temp += lhs[ii];
             }
         }
 
@@ -161,22 +167,15 @@ void ImgMatrixTest::set_diag_dominant_Mmatrix() {
             exit(EXIT_FAILURE);
         }
 
-        lhs.a[isave] = -temp + 0.1;
+        lhs[isave] = -temp + 0.1;
     }
 
     for ( size_type i = 0; i < N; ++i ) {
         rhs[i] = 0.0;
-        for ( size_type ii = lhs.ia[i]; ii < lhs.ia[i+1]; ++ii ) {
-            rhs[i] += lhs.a[ii] * (lhs.ja[ii] + 1);
+        for ( size_type ii = lhs.get_ia(i); ii < lhs.get_ia(i+1); ++ii ) {
+            rhs[i] += lhs[ii] * (lhs.get_ja(ii) + 1);
         }
     }
-}
-
-
-void ImgMatrixPCG::test_ilu_procedures(unsigned int max_level_of_fill, const std::string& reorder_method) {
-    std::cout << "Test ILU factorization with level-of-fill = " << max_level_of_fill
-        << " with reordering method \"" << reorder_method << "\"" << std::endl;
-    solver.test_ilu_factorization(reorder_method, max_level_of_fill, rhs);
 }
 
 
@@ -185,15 +184,16 @@ void ImgMatrixPCG::test_ilu_procedures(unsigned int max_level_of_fill, const std
  *           3D DIFFUSION TEST PROBLEM                  *
  * ==================================================== */
 
-FDGrid::FDGrid(size_type n_dim, const std::string& method):
-    nx(n_dim), ny(n_dim), nz(n_dim), n(nx*ny*nz), rhs(n, 0.0), x(n, 0.0), lhs(), idiag(n, 0.0) {
+EllipticalFDTest::EllipticalFDTest(size_type n_dim, const std::string& method):
+    nx(n_dim), ny(n_dim), nz(n_dim), n(nx*ny*nz),
+    rhs(n, 0.0), lhs(), idiag(n, 0.0), x(n, 0.0) {
 
     if (method == "ascend") {
         set_ascend();
     } else if (method == "aniso") {
         set_anisotropic_K();
     } else {
-        std::cerr << "Unknown method of constructing LHS in FDGrid\n";
+        std::cerr << "Unknown method of constructing LHS in EllipticalFDTest\n";
         exit(EXIT_FAILURE);
     }
 }
@@ -202,7 +202,7 @@ FDGrid::FDGrid(size_type n_dim, const std::string& method):
 // ---------------------------
 // Private helper functions
 // ---------------------------
-void FDGrid::build_sparsity(FullVector<size_type>& ia, FullVector<size_type>& ja) {
+void EllipticalFDTest::build_sparsity(FullVector<size_type>& ia, FullVector<size_type>& ja) {
 
     int inode = -1; int icount = -1;
 
@@ -233,7 +233,7 @@ void FDGrid::build_sparsity(FullVector<size_type>& ia, FullVector<size_type>& ja
     }
 }
 
-void FDGrid::set_ascend() {
+void EllipticalFDTest::set_ascend() {
 
     FullVector<size_type> ia(n+1);
     FullVector<size_type> ja(7*n);
@@ -276,7 +276,7 @@ void FDGrid::set_ascend() {
     lhs.compress_storage();
 }
 
-void FDGrid::set_anisotropic_K() {
+void EllipticalFDTest::set_anisotropic_K() {
 
     // allocate space
     FullVector<size_type> ia(n+1);
