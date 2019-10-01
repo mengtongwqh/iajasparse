@@ -1,5 +1,5 @@
-
-#include <iaja/ilu.h>
+#include <iaja/iaja_config.h>
+#include <iaja/incomplete_factor.h>
 #include <iaja/linalg_matrix.h>
 #include <iaja/linalg_vector.h>
 
@@ -7,9 +7,8 @@
 #include <iostream>
 using std::cout;
 using std::endl;
-using iaja::SparseMatrixIaja;
-using iaja::FullVector;
-using iaja::SparseILU;
+
+using namespace iaja;
 
 /* const int N does not work for 
  * (int[N]){elmt1, elmt2, ..., elmtN}*/
@@ -31,27 +30,30 @@ int main(void) {
     // double b[] = {2.0, 3.0, 4.0};
 
     /* test matrix 2 */
-    std::size_t ia[] = {0, 4, 6, 9, 13, 16, 20};
-    std::size_t ja[] = {0, 2, 3, 5, 1, 3, 0, 2, 4, 0, 1, 3, 5, 2, 4, 5, 0, 3, 4, 5};
-    double a[] = {
+    const SizeType N = 6;
+    const SizeType NNZ = 20;
+    // std::size_t N = sizeof(ia)/sizeof(std::size_t) - 1;
+    // std::size_t NNZ = sizeof(a)/sizeof(double);
+
+    FullVector<SizeType> ia(N+1, new SizeType[N+1] {0, 4, 6, 9, 13, 16, 20});
+    FullVector<SizeType> ja(NNZ, new SizeType[NNZ]
+            {0, 2, 3, 5, 1, 3, 0, 2, 4, 0, 1, 3, 5, 2, 4, 5, 0, 3, 4, 5});
+    FullVector<FloatType> a(NNZ, new FloatType[NNZ] {
         3.0, -1.0, -1.0, -1.0,
         2.0, -1.0,
         -1.0, 3.0, -1.0,
         -1.0, -1.0, 2.0, -1.0,
         -1.0, 3.0, -1.0,
         -1.0, -1.0, -1.0, 4.0
-    };
-    double barr[] = {2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
+    });
+    FullVector<FloatType> b(N, new FloatType[NNZ] {2.0, 3.0, 4.0, 5.0, 6.0, 7.0});
 
-    std::size_t N = sizeof(ia)/sizeof(std::size_t) - 1;
-    std::size_t NNZ = sizeof(a)/sizeof(double);
-    SparseMatrixIaja<double> A(N, N, NNZ, ia, ja, a);
-    FullVector<double> b(N, barr);
+    SparseMatrixIaja<double> A(N, ia, ja, a);
     cout << "Orginal matrix is: \n" << A;
 
     // symbolic factorization
-    SparseILU ilu(A);
-    ilu.reorder("natural");
+    // SparseILU ilu(A);
+    SparseIChol ilu(A);
     ilu.analyse(maxlevel);
     cout << "\nAfter brute-force symbolic factorization:\n";
     ilu.print_level_of_fill(cout);

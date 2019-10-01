@@ -1,8 +1,8 @@
 # NAME OF OUTPUT PROGRAM
-PROGRAM = vector_test
+PROGRAM = andre_std_tests
 
 # COMPILER FLAGS
-SRCEXTS = .cc
+SRCEXTS = .cc .cpp
 
 # IAJA LIBRARY
 LIBIAJA = ../../lib/libiajasparse.a
@@ -16,14 +16,12 @@ OBJS = $(foreach x, $(SRCEXTS), \
 
 all: $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $(PROGRAM).x $(OBJS) $(LIBIAJA)
-
 objs: $(OBJS)
 
 run: 
-	./$(PROGRAM).x
-
+	./$(PROGRAM).x ichol pcg 20 1
 memcheck:
-	valgrind ./$(PROGRAM).x
+	valgrind ./$(PROGRAM).x ichol pcg 20 1
 
 clean:
-	-$(RM) *.x *.o vgcore.*
+	-$(RM) *.x *.o vgcore.* *.txt

@@ -6,7 +6,7 @@ SRCEXTS = .cc .cpp
 
 # IAJA LIBRARY
 LIBIAJA = ../../lib/libiajasparse.a
-CXXFLAGS += -I../../include
+CXXFLAGS += -I../../include -g
 
 SRC = $(wildcard *$(SRCEXTS))
 OBJS = $(foreach x, $(SRCEXTS), \
@@ -24,4 +24,4 @@ memcheck:
 	valgrind ./$(PROGRAM).x
 
 clean:
-	-$(RM) *.x *.o
+	-$(RM) *.x *.o vgcore.*
