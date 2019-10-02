@@ -18,9 +18,10 @@ using FloatType = double;
 } // namespace iaja
 
 // COMPILER FLAGS
-#define PROFILE_ALL
-#define SHOW_MOVE_COPY
-#define SHOW_CALLED_FCN
+#define PROFILING
+// #define VERBOSE
+// #define SHOW_MOVE_COPY
+// #define SHOW_CALLED_FCN
 
 // macros to start and end iaja namespace
 #define IAJA_NAMESPACE_OPEN namespace iaja {

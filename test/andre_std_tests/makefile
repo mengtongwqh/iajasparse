@@ -24,4 +24,4 @@ memcheck:
 	valgrind ./$(PROGRAM).x ichol pcg 20 1
 
 clean:
-	-$(RM) *.x *.o vgcore.* *.txt
+	-$(RM) *.x *.o vgcore.* *.txt *.timer

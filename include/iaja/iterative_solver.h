@@ -1,3 +1,6 @@
+#ifndef _ITERATIVE_SOLVER_H_
+#define _ITERATIVE_SOLVER_H_
+
 #include <iaja/iaja_config.h>
 #include <iaja/linalg_matrix.h>
 #include <iaja/linalg_vector.h>
@@ -43,14 +46,14 @@ class IterativeSolverIFactor : public IterativeSolver {
   /* ctor */
   IterativeSolverIFactor(IncompleteFactor* ifac,
           unsigned int max_iter = 1000,
-          double tol = 1.0e-6): 
+          double tol = 1.0e-6):
       IterativeSolver(ifac->get_A(), max_iter, tol), ifac(ifac) {}
 
   IterativeSolverIFactor(const SparseMatrixIaja<FloatType>& A,
           unsigned int max_iter = 1000,
           double tol = 1.0e-6):
       IterativeSolver(A, max_iter, tol), ifac(nullptr) {}
-      
+
   /* dtor */
   virtual ~IterativeSolverIFactor() = default;
 
@@ -58,8 +61,7 @@ class IterativeSolverIFactor : public IterativeSolver {
   const IncompleteFactor& get_ilu() const { return *ifac; }
 
   /* numerical operations */
-  virtual void symbolic_factor(const std::string& reorder_method = "natural",
-          unsigned int max_level_of_fill = 1);
+  virtual void symbolic_factor(unsigned int level_of_fill = 1);
 
  protected:
   IncompleteFactor* ifac;
@@ -102,15 +104,15 @@ class Orthomin : public IterativeSolverIFactor {
  public:
   /* ctor */
   Orthomin(IncompleteFactor* ifac,
-          unsigned int k_orth = 5,
           unsigned int max_iter = 1000,
-          double tol = 1.0e-6):
+          double tol = 1.0e-6,
+          unsigned int k_orth = 5):
       IterativeSolverIFactor(ifac, max_iter, tol), k_orth(k_orth) {}
 
   Orthomin(const SparseMatrixIaja<FloatType>& A,
-          unsigned int k_orth = 5,
           unsigned int max_iter = 1000,
-          double tol = 1.0e-6):
+          double tol = 1.0e-6,
+          unsigned int k_orth = 5):
       IterativeSolverIFactor(A, max_iter, tol), k_orth(k_orth) {}
 
   /* dtor */
@@ -124,3 +126,5 @@ class Orthomin : public IterativeSolverIFactor {
 };
 
 IAJA_NAMESPACE_CLOSE
+
+#endif

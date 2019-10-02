@@ -175,7 +175,7 @@ class SparseVector {
   reference operator[](size_type i);
   const_reference operator[] (size_type i) const;
 
-  size_type get_ja(size_type j) const { return ja[j]; };
+  size_type get_ja(size_type j) const { return ja[j]; }
 
   /* dimension */
   size_type length() const { return n; }
@@ -183,7 +183,7 @@ class SparseVector {
   size_type nnonzero() const { return nnz; }
 
  protected:
-  SparseVector(size_type n, size_type nnz): n(n), nnz(nnz), ja(nnz), a(nnz) {};
+  SparseVector(size_type n, size_type nnz): n(n), nnz(nnz), ja(nnz), a(nnz) {}
 
   size_type n;
   size_type nnz;

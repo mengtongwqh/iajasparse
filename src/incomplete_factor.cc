@@ -6,10 +6,6 @@
 #include <cassert>
 #include <iomanip>
 
-#ifdef PROFILE_ALL
-    #define PROFILING
-#endif
-
 IAJA_NAMESPACE_OPEN
 
 /* ============================================ *
@@ -143,9 +139,7 @@ void IncompleteFactor::analyse(const unsigned int max_level_of_fill) {
     // brute-force symbolic factorization
     // ------------------------------------
 
-#ifdef PROFILING
-    Timer timer;
-#endif
+    TIMER_BEGIN
 
     // clean the vector row if not empty
     if (!rows.empty()) {
@@ -236,10 +230,7 @@ void IncompleteFactor::analyse(const unsigned int max_level_of_fill) {
         }
     } // i-loop thru all rows
 
-#ifdef PROFILING
-    std::cout << "Timing for ILU symbolic factorization (analyse): " <<
-        std::scientific << timer.elapsed() << "\n";
-#endif
+    TIMER_END
 }
 
 void IncompleteFactor::merge_linked_list(
@@ -336,9 +327,7 @@ void SparseILU::factor() {
     // Numeric factorization
     // ------------------------------------
 
-#ifdef PROFILING
-    Timer timer;
-#endif
+    TIMER_BEGIN
 
     // allocate temp vector
     FullVector<FloatType> row_temp(n, 0.0);
@@ -378,10 +367,7 @@ void SparseILU::factor() {
         }
     } // i(row)-loop
 
-#ifdef PROFILING
-    std::cout << "Timing for ILU numeric factorization (factor): " <<
-        std::scientific << timer.elapsed() << "\n";
-#endif
+    TIMER_END
 }
 
 
@@ -391,9 +377,6 @@ void SparseILU::solve(const FullVector<FloatType>& b, FullVector<FloatType>& x) 
     // ------------------------------------
     // Forward and back solve
     // ------------------------------------
-#ifdef PROFILING
-    Timer timer;
-#endif
 
     assert(x.length() == n && b.length() == n);
 
@@ -423,10 +406,6 @@ void SparseILU::solve(const FullVector<FloatType>& b, FullVector<FloatType>& x) 
     for (size_type i = 0; i < n; ++i)
         x[ order_new2old[i] ] = y[i];
 
-#ifdef PROFILING
-    std::cout << "Timing for ILU forward/back solve (solve): " <<
-        std::scientific << timer.elapsed() << "\n";
-#endif
 }
 
 
@@ -452,9 +431,7 @@ SparseIChol::SparseIChol(SparseIChol&& rhs):
 
 void SparseIChol::factor() {
 
-#ifdef PROFILING
-    Timer timer;
-#endif
+    TIMER_BEGIN
 
     FullVector<FloatType> row_temp(n, 0.0);
     FullVector<size_type> upper_offset(n);
@@ -516,15 +493,13 @@ void SparseIChol::factor() {
         }
     } // i(row)-loop
 
+    TIMER_END
+
 #ifdef DEBUG
     for (size_type i = 0; i < n; ++i) 
         assert(upper_offset[i] == rows[i].nnonzero());
 #endif
 
-#ifdef PROFILING
-    std::cout << "Timing for IChol numeric factorization (factor): " <<
-        std::scientific << timer.elapsed() << "\n";
-#endif
 }
 
 

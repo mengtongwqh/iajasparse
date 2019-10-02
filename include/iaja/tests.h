@@ -2,10 +2,10 @@
 #define _TESTS_H_
 
 #include <iaja/iaja_config.h>
-#include <iaja/linalg_vector.h>
-#include <iaja/linalg_matrix.h>
 #include <iaja/incomplete_factor.h>
 #include <iaja/iterative_solver.h>
+#include <iaja/linalg_vector.h>
+#include <iaja/linalg_matrix.h>
 
 #include <string>
 

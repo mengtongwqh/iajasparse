@@ -1,7 +1,19 @@
 #include <iaja/iaja_config.h>
 #include <iaja/iterative_solver.h>
+#include <iaja/util.h>
+
 #include <cmath>
 #include <fstream>
+#include <typeinfo>
+
+#ifdef VERBOSE
+    #define REPORT_AVG_RES_NORM do {std::cout \
+        << typeid(*this).name() \
+        << ": average residual norm = " \
+        << sqrt(rnorm2)/N << std::endl;} while (0);
+#else
+    #define REPORT_AVG_RES_NORM
+#endif
 
 IAJA_NAMESPACE_OPEN
 
@@ -22,10 +34,7 @@ void IterativeSolver::residual(
  * ============================================ */
 
 void IterativeSolverIFactor::symbolic_factor(
-        const std::string& reorder_method,
         unsigned int max_level_of_fill) {
-    // call ILU reordering and analyse
-    // ifac->reorder(reorder_method);
     assert(ifac != nullptr);
     ifac->analyse(max_level_of_fill);
 }
@@ -45,6 +54,8 @@ int PCG::iterative_solve(const FullVector<double>& b, FullVector<double>& x) {
  * --------------------------------------- */
 
     assert(A.nrow() == A.ncol());
+
+    TIMER_BEGIN
 
     // do numerical factorization
     if (ifac) ifac->factor();
@@ -76,7 +87,7 @@ int PCG::iterative_solve(const FullVector<double>& b, FullVector<double>& x) {
     // iteration loop
     while ( rnorm2 > tol*tol*bnorm2 && iter_count < max_iter ) {
 
-        std::cout << sqrt(rnorm2)/N << std::endl;
+        REPORT_AVG_RES_NORM
 
         ++iter_count;
 
@@ -113,12 +124,15 @@ int PCG::iterative_solve(const FullVector<double>& b, FullVector<double>& x) {
 
     residual_norm = sqrt(rnorm2);
 
+    TIMER_END
+
     if (iter_count < max_iter) {
         return EXIT_SUCCESS;
     } else {
         std::cerr << "PCG failed to converge after max_iter " << max_iter << std::endl;
         exit(EXIT_FAILURE);
     }
+
 }
 
 
@@ -128,6 +142,8 @@ int PCG::iterative_solve(const FullVector<double>& b, FullVector<double>& x) {
 int Orthomin::iterative_solve(const FullVector<double>& b, FullVector<double>& x) {
 
     assert(A.nrow() == A.ncol());
+
+    TIMER_BEGIN
 
     if (ifac) ifac->factor();
 
@@ -147,7 +163,7 @@ int Orthomin::iterative_solve(const FullVector<double>& b, FullVector<double>& x
 
     while ( rnorm2 > bnorm2*tol*tol && iter_count < max_iter ) {
 
-        std::cout << sqrt(rnorm2)/N << std::endl;
+        REPORT_AVG_RES_NORM
 
         if (ifac)
             ifac->solve(r, rt);
@@ -184,12 +200,16 @@ int Orthomin::iterative_solve(const FullVector<double>& b, FullVector<double>& x
     }
 
     residual_norm = sqrt(rnorm2);
+
+    TIMER_END
+
     if (iter_count < max_iter) {
         return EXIT_SUCCESS;
     } else {
         std::cerr << "Orthomin failed to converge after max_iter " << max_iter << std::endl;
         exit(EXIT_FAILURE);
     }
+
 }
 
 IAJA_NAMESPACE_CLOSE

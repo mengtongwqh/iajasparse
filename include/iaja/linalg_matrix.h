@@ -3,7 +3,9 @@
 
 #include <iaja/iaja_config.h>
 #include <iaja/linalg_vector.h>
+
 #include <iostream>
+#include <vector>
 
 IAJA_NAMESPACE_OPEN
 
@@ -55,7 +57,7 @@ class SparsityIaja {
   size_type nnonzero() const { return nnz; }
 
   void compress_storage();
-  
+
 
  protected:
   SparsityIaja(size_type nr, size_type nc, size_type nnz):
@@ -159,7 +161,7 @@ class SparseMatrixIaja : public SparsityIaja {
  protected:
   SparseMatrixIaja(size_type nr, size_type nc, size_type nnz):
       SparsityIaja(nr, nc, nnz), a(nnz) {}
-  
+
   FullVector<T> a;        // nonzero entries
 };
 

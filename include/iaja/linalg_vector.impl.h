@@ -438,10 +438,13 @@ template <> inline
 std::ostream& operator<<(std::ostream& os, const SparseVector<double>& vin) {
 
     const unsigned int width = PRINT_WIDTH_DOUBLE;
+    const unsigned int precision = PRINT_PRECISION_DOUBLE;
 
     for (decltype(vin.n) i = 0, j = 0; i < vin.n; ++i) {
         if (j < vin.nnz && i == vin.ja[j]) {
-            os << std::setw(width) << std::scientific <<std::left<< vin.a[j++];
+            os << std::setw(width) << std::scientific
+                << std::setprecision(precision)
+                << std::left<< vin.a[j++];
         } else {
             os << std::setw(width) << std::scientific << std::left << 0;
         }

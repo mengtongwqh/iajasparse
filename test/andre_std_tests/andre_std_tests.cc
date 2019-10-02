@@ -1,6 +1,7 @@
 #include <iaja/iaja_config.h>
 #include <iaja/incomplete_factor.h>
 #include <iaja/tests.h>
+#include <iaja/util.h>
 
 #include <iostream>
 #include <fstream>
@@ -19,7 +20,7 @@ struct Parameter {
     unsigned int n_orth = 5;
     unsigned int max_iter = 500;
     const double tol = 1.0e-6;
-    const std::string test_method = "aniso";
+    const std::string test_method = "ascend";
 };
 
 
@@ -36,14 +37,14 @@ void parse_input(int argc, char *argv[], Parameter& prm) {
     prm.solver_type = argv[2];
 
     if (prm.solver_type == "pcg" || prm.solver_type == "orthomin") {
-        if (argc == 3) {
+        if (argc == 4) {
             prm.N = atoi(argv[3]);
         } else {
             prm.N = atoi(argv[3]);
             prm.max_LoF = atoi(argv[4]);
         }
     } else {
-        std::cerr << "Unknown Solver Type" << std::endl;
+        std::cerr << "Unknown Solver Type " << prm.solver_type << std::endl;
         exit(EXIT_FAILURE);
     }
 }
@@ -54,21 +55,19 @@ int main(int argc, char *argv[]) {
     Parameter prm;
     parse_input(argc, argv, prm);
 
-    /* File Output */
-    std::ofstream spfile("sparsity_pattern.txt", std::ofstream::out);
-    std::ofstream loffile("level_of_fill.txt", std::ofstream::out);
-    std::ofstream ilufile("incomplete_factored.txt", std::ofstream::out);
-    std::ofstream fullfile("full_pattern.txt", std::ofstream::out);
-
     EllipticalFDTest testobj(prm.N, prm.test_method);
 
     IncompleteFactor *ifac;
-    if (prm.preconditioner == "ilu")
+    if (prm.preconditioner == "ilu") {
         ifac = new SparseILU(testobj.get_lhs());
-    else if (prm.preconditioner == "ichol")
+    } else if (prm.preconditioner == "ichol") {
         ifac = new SparseIChol(testobj.get_lhs());
-    else
+    } else if (prm.preconditioner == "none") {
+        prm.max_LoF = -1;
+    } else {
+        std::cerr << "Unknown preconditioner type " << prm.preconditioner << std::endl;
         exit(EXIT_FAILURE);
+    }
 
 
     IterativeSolverIFactor *solver;
@@ -84,15 +83,11 @@ int main(int argc, char *argv[]) {
     }
 
     if (prm.max_LoF >= 0) solver->symbolic_factor(prm.max_LoF);
+    
+    TIMER_BEGIN
     solver->iterative_solve(testobj.get_rhs(), testobj.x);
+    TIMER_END
     std::cout << solver->get_iter_count() << std::endl;
-
-
-    /* close output files */
-    spfile.close();
-    loffile.close();
-    ilufile.close();
-    fullfile.close();
 
     /* free memory */
     delete solver;

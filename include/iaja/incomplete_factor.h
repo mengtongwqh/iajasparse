@@ -1,5 +1,5 @@
-#ifndef _ILU_H_
-#define _ILU_H_
+#ifndef _INCOMPLETE_FACTOR_H_
+#define _INCOMPLETE_FACTOR_H_
 
 #include <iaja/iaja_config.h>
 #include <iaja/linalg_matrix.h>
@@ -166,4 +166,4 @@ class SparseIChol : public IncompleteFactor {
 
 IAJA_NAMESPACE_CLOSE
 
-#endif //_ILU_H_
+#endif //_INCOMPLETE_FACTOR_H_
