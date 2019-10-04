@@ -17,10 +17,10 @@ struct Parameter {
 
     /* modify these parameters prior to compile time */
     bool file_output = true;
-    unsigned int n_orth = 5;
+    unsigned int n_orth = 2;
     unsigned int max_iter = 500;
     const double tol = 1.0e-6;
-    const std::string test_method = "ascend";
+    const std::string test_method = "elliptical";
 };
 
 

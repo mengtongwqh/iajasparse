@@ -1,0 +1,13 @@
+vgcore.*
+*.a
+*.d
+*.m
+*.o
+*.x
+*.txt
+*.dat
+*.log
+*.timer
+tags*
+octave-workspace
+.syntastic_cpp_config
