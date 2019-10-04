@@ -7,8 +7,8 @@ IAJA_NAMESPACE_OPEN
  *            IMAGE DENOISING TEST PROBLEM              *
  * ==================================================== */
 
-ImgDenoiseTest::ImgDenoiseTest(size_type N_dim)
-    : n(N_dim), N(n*n), lhs(), rhs(N), x(N, 0.0) {
+ImgDenoiseTest::ImgDenoiseTest(size_type N_dim):
+    n(N_dim), N(n*n), lhs(), rhs(N), x(N, 0.0) {
     alpha =
         (n == 16) ? 4e-2 :
         (n == 32) ? 3e-2 :
@@ -190,7 +190,7 @@ EllipticalFDTest::EllipticalFDTest(size_type n_dim, const std::string& method):
 
     if (method == "ascend") {
         set_ascend();
-    } else if (method == "aniso") {
+    } else if (method == "elliptical") {
         set_anisotropic_K();
     } else {
         std::cerr << "Unknown method of constructing LHS in EllipticalFDTest\n";
@@ -337,7 +337,8 @@ void EllipticalFDTest::set_anisotropic_K() {
               }
             }
           }
-          Kz[i][j][k] = 10000000.0; // Peter's killer value 10000000.0;
+          // Kz[i][j][k] = 10000000.0; // Peter's killer value 10000000.0;
+          Kz[i][j][k] = 1.0;
         }
       }
     }
@@ -433,6 +434,13 @@ void EllipticalFDTest::set_anisotropic_K() {
     lhs = SparseMatrixIaja<FloatType>
         (n, std::move(ia), std::move(ja), std::move(a));
     lhs.compress_storage();
+}
+
+FloatType EllipticalFDTest::standard_solution_ascend() const {
+    FullVector<FloatType> x_std(n);
+    FloatType ctr = 0.0;
+    for (auto& i : x_std) i = ++ctr;
+    return (x_std - x).norm_l2();
 }
 
 IAJA_NAMESPACE_CLOSE
