@@ -10,4 +10,3 @@ vgcore.*
 *.timer
 tags*
 octave-workspace
-.syntastic_cpp_config
