@@ -65,6 +65,7 @@ class IterativeSolverIFactor : public IterativeSolver {
 
  protected:
   IncompleteFactor* ifac;
+  unsigned int interval_residual_recompute = 50;
 };
 
 
@@ -91,8 +92,6 @@ class PCG : public IterativeSolverIFactor {
   /* methods */
   virtual int iterative_solve(const FullVector<double>& b, FullVector<double>& soln);
 
- private:
-  const unsigned int interval_residual_recompute = 50;
 };
 
 
