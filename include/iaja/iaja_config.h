@@ -17,8 +17,8 @@ using SizeType = std::size_t;
 using FloatType = double;
 } // namespace iaja
 
-// COMPILER FLAGS
-#define PROFILING
+// DEINITIONS
+// #define PROFILING
 // #define VERBOSE
 // #define SHOW_MOVE_COPY
 // #define SHOW_CALLED_FCN

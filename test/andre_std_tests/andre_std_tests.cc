@@ -84,9 +84,7 @@ int main(int argc, char *argv[]) {
 
     if (prm.max_LoF >= 0) solver->symbolic_factor(prm.max_LoF);
     
-    TIMER_BEGIN
     solver->iterative_solve(testobj.get_rhs(), testobj.x);
-    TIMER_END
     std::cout << solver->get_iter_count() << std::endl;
 
     /* free memory */
