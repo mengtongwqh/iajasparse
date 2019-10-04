@@ -18,6 +18,18 @@ SparsityIaja::SparsityIaja(size_type nr, size_type nc, size_type nnz,
         const size_type* ia, const size_type* ja):
     nr(nr), nc(nc), nnz(nnz), ia(nr+1, ia), ja(nnz, ja) {}
 
+SparsityIaja::SparsityIaja(size_type nr, size_type nc, size_type nnz,
+        const long int* ia_in, const long int* ja_in):
+    nr(nr), nc(nc), nnz(nnz), ia(nr+1), ja(nnz) {
+
+        size_type j = 0;
+        for (auto i = ia.begin(); i != ia.end(); ++i, ++j)
+            *i = ia_in[j] >= 0 ? ia_in[j] : nnz-ia_in[j]-1;
+        j = 0;
+        for (auto i = ja.begin(); i != ja.end(); ++i, ++j)
+            *i = ja_in[j] >= 0 ? ja_in[j] : nr-ja_in[j]-1;
+    }
+
 SparsityIaja::SparsityIaja(size_type nc,
         const FullVector<size_type>& ia,
         const FullVector<size_type>& ja):
