@@ -21,6 +21,9 @@ class SparsityIaja {
   SparsityIaja(size_type nr, size_type nc, size_type nnz,
           const size_type* ia, const size_type* ja);
 
+  SparsityIaja(size_type nr, size_type nc, size_type nnz,
+          const long int* ia, const long int* ja);
+
   SparsityIaja(size_type nc,
           const FullVector<size_type>& ia,
           const FullVector<size_type>& ja);
@@ -97,6 +100,9 @@ class SparseMatrixIaja : public SparsityIaja {
 
   SparseMatrixIaja(size_type nr, size_type nc, size_type nnz,
           const size_type* ia, const size_type *ja);
+
+  SparseMatrixIaja(size_type nr, size_type nc, size_type nnz, 
+          const long int* ia, const long int *ja, const T* a);
 
   SparseMatrixIaja(size_type nr, size_type nc, size_type nnz,
           const size_type* ia, const size_type *ja, const T& a);

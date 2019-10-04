@@ -29,6 +29,11 @@ SparseMatrixIaja<T>::SparseMatrixIaja(size_type nr, size_type nc,  size_type nnz
     SparsityIaja(nr, nc, nnz, ia, ja), a(nnz, a) {}
 
 template <typename T>
+SparseMatrixIaja<T>::SparseMatrixIaja(size_type nr, size_type nc, size_type nnz,
+        const long int* ia, const long int* ja, const T* a):
+    SparsityIaja(nr, nc, nnz, ia, ja), a(nnz, a) {}
+
+template <typename T>
 SparseMatrixIaja<T>::SparseMatrixIaja(size_type nc,
         const FullVector<size_type>& ia,
         const FullVector<size_type>& ja,
