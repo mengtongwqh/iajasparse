@@ -185,8 +185,13 @@ int Orthomin::iterative_solve(const FullVector<double>& b, FullVector<double>& x
         Apk.push_back(Ap);
 
         double alpha = (r*Ap)/(Ap*Ap);
-        x.saxpy(alpha , p, x);
-        r.saxpy(-alpha, Ap, r);
+        x.saxpy(alpha, p, x);
+
+        if ( iter_count % interval_residual_recompute ) {
+            r.saxpy(-alpha, Ap, r);
+        } else {
+            residual(b, x, r);
+        }
 
         // restart orthomin(k) after k_orth steps
         if ( ++k == k_orth ) {
