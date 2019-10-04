@@ -89,9 +89,11 @@ class EllipticalFDTest {
   void build_sparsity(FullVector<SizeType>& ia, FullVector<SizeType>& ja);
   void set_ascend();
   void set_anisotropic_K();
+  FloatType standard_solution_ascend() const;
 };
 
 /* ==================================================== */
+
 IAJA_NAMESPACE_CLOSE
 
 #endif
