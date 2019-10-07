@@ -14,10 +14,9 @@ struct Parameter {
     unsigned int N = 0;
     int max_LoF = -1;
     std::string preconditioner = "ilu";
+    unsigned int n_orth = 5;
 
     /* modify these parameters prior to compile time */
-    bool file_output = true;
-    unsigned int n_orth = 2;
     unsigned int max_iter = 500;
     const double tol = 1.0e-6;
     const std::string test_method = "elliptical";
@@ -38,10 +37,14 @@ void parse_input(int argc, char *argv[], Parameter& prm) {
 
     if (prm.solver_type == "pcg" || prm.solver_type == "orthomin") {
         if (argc == 4) {
-            prm.N = atoi(argv[3]);
-        } else {
-            prm.N = atoi(argv[3]);
+            prm.N       = atoi(argv[3]);
+        } else if (argc == 5) {
+            prm.N       = atoi(argv[3]);
             prm.max_LoF = atoi(argv[4]);
+        } else if (argc == 6) {
+            prm.N       = atoi(argv[3]);
+            prm.max_LoF = atoi(argv[4]);
+            prm.n_orth  = atoi(argv[5]);
         }
     } else {
         std::cerr << "Unknown Solver Type " << prm.solver_type << std::endl;
