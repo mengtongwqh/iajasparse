@@ -80,6 +80,7 @@ class IncompleteFactor {
 
   /* Accessor */
   const SparseMatrixIaja<FloatType>& get_A() const {return A;}
+  const std::vector<SparseFactorRow>& get_rows() const {return rows;}
 
   /* Type Conversion */
   explicit operator SparseMatrixIaja<FloatType>() const;

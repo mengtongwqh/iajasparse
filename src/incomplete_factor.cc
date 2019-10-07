@@ -222,8 +222,8 @@ void IncompleteFactor::analyse(const unsigned int max_level_of_fill) {
         // locate diagonal entry
         size_type jdiag = 0;
         for ( ; rows[i].get_ja(jdiag) < i && jdiag < nnzrow; ++jdiag ) {}
-        if ( rows.back().get_ja(jdiag) == i ) {
-            rows.back().diag = jdiag;
+        if ( rows[i].get_ja(jdiag) == i ) {
+            rows[i].diag = jdiag;
         } else {
             std::cerr << "ILU analyse: Diagonal or row " << i << " is zero" << std::endl;
             exit(EXIT_FAILURE);
@@ -329,8 +329,9 @@ void SparseILU::factor() {
 
     TIMER_BEGIN
 
-    // allocate temp vector
+    // allocate temp and filter vector
     FullVector<FloatType> row_temp(n, 0.0);
+    FullVector<bool> row_filter(n, false);
 
     // loop through each row
     for ( size_type i = 0; i < n; ++i ) {
@@ -340,6 +341,10 @@ void SparseILU::factor() {
         // scatter the entries of ith row under new ordering
         for ( size_type j = A.get_ia(iold); j < A.get_ia(iold+1); ++j )
             row_temp[ order_old2new[ A.get_ja(j)] ] = A[j];
+
+        // enable corresponding entries in the filter vector
+        for (size_type j = 0; j < rows[i].nnonzero(); ++j)
+            row_filter[rows[i].get_ja(j)] = true;
 
         // scan work vector columnwise, determine multiplier
         // only elements left of the diagonal are considered
@@ -355,7 +360,7 @@ void SparseILU::factor() {
             // to the right of this entry
             for ( size_type jj = rows[idx_col].diag+1; jj < rows[idx_col].nnonzero(); ++jj ) {
                 size_type idx_row = rows[idx_col].get_ja(jj);
-                row_temp[idx_row] -= mult * rows[idx_col][jj];
+                row_temp[idx_row] -= mult*rows[idx_col][jj]*row_filter[idx_row];
             }
         } // j-loop for L of previously factored rows
 
@@ -363,11 +368,22 @@ void SparseILU::factor() {
         for (size_type j = 0; j < rows[i].nnonzero(); ++j) {
             size_type idx = rows[i].get_ja(j);
             rows[i][j] = row_temp[idx];
+            // reset temp vector
             row_temp[idx] = 0.0;
+            // disable all entries in filter vector
+            row_filter[idx] = false;
         }
     } // i(row)-loop
 
     TIMER_END
+
+#ifdef DEBUG
+    // check and warn ahead for vanishing diagonal entry
+    for (size_type i = 0; i < n; ++i) {
+        if ( fabs(rows[i][rows[i].diag]) < FLOATING_POINT_NEARLY_ZERO)
+            std::cout << i << " row has zero diagonal\n";
+    }
+#endif
 }
 
 
@@ -405,7 +421,6 @@ void SparseILU::solve(const FullVector<FloatType>& b, FullVector<FloatType>& x) 
     // revert y (new order) to x (old order)
     for (size_type i = 0; i < n; ++i)
         x[ order_new2old[i] ] = y[i];
-
 }
 
 
@@ -496,10 +511,9 @@ void SparseIChol::factor() {
     TIMER_END
 
 #ifdef DEBUG
-    for (size_type i = 0; i < n; ++i) 
+    for (size_type i = 0; i < n; ++i)
         assert(upper_offset[i] == rows[i].nnonzero());
 #endif
-
 }
 
 

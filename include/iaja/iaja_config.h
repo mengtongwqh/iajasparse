@@ -4,9 +4,9 @@
 
 namespace iaja {
 // parameters controlling print styles
-const unsigned int PRINT_WIDTH_DOUBLE = 14;
+const unsigned int PRINT_WIDTH_DOUBLE = 15;
 const unsigned int PRINT_WIDTH_UNSIGNED_INT = 5;
-const unsigned int PRINT_PRECISION_DOUBLE = 5;
+const unsigned int PRINT_PRECISION_DOUBLE = 6;
 
 const char  SPARSITY_FILL_PATTERN = 'X';
 const char  SPARSITY_EMPTY_PATTERN = ' ';
@@ -18,7 +18,7 @@ using FloatType = double;
 } // namespace iaja
 
 // DEINITIONS
-#define PROFILING
+// #define PROFILING
 #define VERBOSE
 // #define SHOW_MOVE_COPY
 // #define SHOW_CALLED_FCN
