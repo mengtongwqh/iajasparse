@@ -329,6 +329,13 @@ void SparseILU::factor() {
 
     TIMER_BEGIN
 
+    // NOTE: The row work vector should be only updated
+    // where the entry has a meaningful level-of-fill.
+    // Or else entries from the previous rows
+    // will cause excessive fill-in that won't be
+    // zeroed out after processing this row
+    // That's why we need the filter vector.
+
     // allocate temp and filter vector
     FullVector<FloatType> row_temp(n, 0.0);
     FullVector<bool> row_filter(n, false);
