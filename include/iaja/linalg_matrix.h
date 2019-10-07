@@ -64,7 +64,7 @@ class SparsityIaja {
 
  protected:
   SparsityIaja(size_type nr, size_type nc, size_type nnz):
-      nr(nr), nc(nc), nnz(nnz), ia(nr+1), ja(nnz) {}
+      nr(nr), nc(nc), nnz(nnz), ia(nr+1, static_cast<size_type>(0)), ja(nnz) {}
 
   size_type nr;
   size_type nc;
