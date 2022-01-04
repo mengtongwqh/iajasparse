@@ -338,7 +338,7 @@ void EllipticalFDTest::set_anisotropic_K() {
             }
           }
           Kz[i][j][k] = 10000000.0; // Peter's killer value 10000000.0;
-          // Kz[i][j][k] = 1.0;
+          //Kz[i][j][k] = 1.0;
         }
       }
     }

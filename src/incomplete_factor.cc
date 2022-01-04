@@ -138,7 +138,9 @@ void IncompleteFactor::analyse(const unsigned int max_level_of_fill) {
     // ------------------------------------
     // brute-force symbolic factorization
     // ------------------------------------
-
+#ifdef VERBOSE
+    std::cout << "Starting Incomplete LU factorization..." << std::endl;
+#endif
     TIMER_BEGIN
 
     // clean the vector row if not empty
@@ -231,6 +233,9 @@ void IncompleteFactor::analyse(const unsigned int max_level_of_fill) {
     } // i-loop thru all rows
 
     TIMER_END
+#ifdef VERBOSE
+    std::cout << "Completed Incomplete LU factorization" << std::endl;
+#endif
 }
 
 void IncompleteFactor::merge_linked_list(

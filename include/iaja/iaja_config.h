@@ -18,7 +18,7 @@ using FloatType = double;
 } // namespace iaja
 
 // DEINITIONS
-// #define PROFILING
+#define PROFILING
 #define VERBOSE
 // #define SHOW_MOVE_COPY
 // #define SHOW_CALLED_FCN

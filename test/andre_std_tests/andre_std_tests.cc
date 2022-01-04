@@ -17,7 +17,7 @@ struct Parameter {
     unsigned int n_orth = 5;
 
     /* modify these parameters prior to compile time */
-    unsigned int max_iter = 500;
+    unsigned int max_iter = 1000;
     const double tol = 1.0e-6;
     const std::string test_method = "elliptical";
 };
